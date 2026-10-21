@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: ColcaTrufis — API de Ubicación
+  version: 1.0.0
+  description: |
+    Rutas y paradas almacenadas en PostGIS (EPSG:4326) y servidas como GeoJSON (RFC 7946).
+    Las coordenadas siempre van en orden **[longitud, latitud]**.
+
+    Datos iniciales: © colaboradores de OpenStreetMap (ODbL).
+servers:
+  - url: http://localhost:8080
+    description: API Gateway local
+security:
+  - bearerAuth: []
+tags:
+  - name: Rutas
+  - name: Paradas
+paths:
+  /api/ubicacion/rutas:
+    get:
+      tags: [Rutas]
+      summary: Todas las rutas como FeatureCollection
+      parameters:
+        - { name: linea, in: query, schema: { type: string }, example: '252' }
+        - { name: sindicato, in: query, schema: { type: string }, description: Coincidencia parcial, sin distinguir mayúsculas }
+        - { name: estado, in: query, schema: { type: string, enum: [activa, suspendida] } }
+      responses:
+        '200':
+          description: Rutas
+          content:
+            application/geo+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FeatureCollection'
+                  - type: object
+                    properties:
+                      features:
+                        type: array
+                        items: { $ref: '#/components/schemas/RutaFeature' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/ubicacion/rutas/{id}:
+    get:
+      tags: [Rutas]
+      summary: Geometría, atributos y paradas de una ruta
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Ruta
+          content:
+            application/geo+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RutaFeature'
+                  - type: object
+                    properties:
+                      properties:
+                        type: object
+                        properties:
+                          paradas:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id: { type: integer }
+                                nombre: { type: string }
+                                orden: { type: integer }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '404':
+          description: Ruta no encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/ubicacion/paradas:
+    get:
+      tags: [Paradas]
+      summary: Paradas como puntos GeoJSON
+      parameters:
+        - { name: ruta_id, in: query, schema: { type: integer }, description: Solo las paradas de esta ruta }
+      responses:
+        '200':
+          description: Paradas
+          content:
+            application/geo+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FeatureCollection'
+                  - type: object
+                    properties:
+                      features:
+                        type: array
+                        items: { $ref: '#/components/schemas/ParadaFeature' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT (RS256)
+  responses:
+    NoAutorizado:
+      description: Token ausente, inválido o expirado (lo responde el Gateway)
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+    Posicion:
+      type: array
+      description: '[longitud, latitud]'
+      minItems: 2
+      maxItems: 2
+      items: { type: number }
+      example: [-66.2405, -17.3895]
+    FeatureCollection:
+      type: object
+      required: [type, features]
+      properties:
+        type: { type: string, enum: [FeatureCollection] }
+        features: { type: array, items: { type: object } }
+    RutaFeature:
+      type: object
+      properties:
+        type: { type: string, enum: [Feature] }
+        id: { type: integer }
+        geometry:
+          type: object
+          properties:
+            type: { type: string, enum: [LineString] }
+            coordinates:
+              type: array
+              items: { $ref: '#/components/schemas/Posicion' }
+        properties:
+          type: object
+          properties:
+            id: { type: integer }
+            linea: { type: string, example: '252' }
+            nombre: { type: string, example: 'Trufi 252: Calle Litoral → Avenida Blanco Galindo' }
+            sindicato: { type: string, nullable: true, example: Asociación de taxi trufis 1ro de mayo }
+            tipo: { type: string, nullable: true, example: Trufi }
+            desde: { type: string, nullable: true }
+            hasta: { type: string, nullable: true }
+            tarifa: { type: number, nullable: true, description: Bolivianos }
+            frecuencia_min: { type: integer, nullable: true }
+            horario: { type: string, nullable: true, example: '06:00-21:00' }
+            color: { type: string, example: '#E53935' }
+            estado: { type: string, enum: [activa, suspendida] }
+    ParadaFeature:
+      type: object
+      properties:
+        type: { type: string, enum: [Feature] }
+        id: { type: integer }
+        geometry:
+          type: object
+          properties:
+            type: { type: string, enum: [Point] }
+            coordinates: { $ref: '#/components/schemas/Posicion' }
+        properties:
+          type: object
+          properties:
+            id: { type: integer }
+            nombre: { type: string }
+            descripcion: { type: string, nullable: true }
+            rutas:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: integer }
+                  linea: { type: string }
+                  color: { type: string }

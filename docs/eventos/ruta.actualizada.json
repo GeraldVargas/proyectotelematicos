@@ -1,0 +1,14 @@
+{
+  "id": "6f1d6c2e-8f0e-4b8a-9d55-2b7f3f0c9a11",
+  "tipo": "ruta.actualizada",
+  "version": 1,
+  "origen": "api-ubicacion",
+  "ocurrido_en": "2026-10-15T14:30:00-04:00",
+  "datos": {
+    "ruta_id": 2,
+    "linea": "252",
+    "sindicato": "Asociación de taxi trufis 1ro de mayo",
+    "cambio": "trazado",
+    "descripcion": "Desvío temporal por obras en la Av. Blanco Galindo"
+  }
+}

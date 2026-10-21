@@ -1,0 +1,22 @@
+{
+  "servicios": {
+    "usuarios": "http://api-usuarios:8000",
+    "ubicacion": "http://api-ubicacion:8000",
+    "notificaciones": "http://api-notificaciones:8000"
+  },
+  "cors_origenes": ["*"],
+  "rutas": [
+    { "endpoint": "/api/usuarios/registro", "method": "POST", "servicio": "usuarios", "publico": true },
+    { "endpoint": "/api/usuarios/login", "method": "POST", "servicio": "usuarios", "publico": true },
+    { "endpoint": "/api/usuarios/refresh", "method": "POST", "servicio": "usuarios", "publico": true },
+    { "endpoint": "/api/usuarios/perfil", "method": "GET", "servicio": "usuarios" },
+
+    { "endpoint": "/api/ubicacion/rutas", "method": "GET", "servicio": "ubicacion", "query": ["linea", "sindicato", "estado"] },
+    { "endpoint": "/api/ubicacion/rutas/{id}", "method": "GET", "servicio": "ubicacion" },
+    { "endpoint": "/api/ubicacion/paradas", "method": "GET", "servicio": "ubicacion", "query": ["ruta_id"] },
+
+    { "endpoint": "/api/notificaciones", "method": "GET", "servicio": "notificaciones", "query": ["page", "por_pagina"] },
+    { "endpoint": "/api/notificaciones/suscripciones", "method": "GET", "servicio": "notificaciones" },
+    { "endpoint": "/api/notificaciones/suscripciones", "method": "POST", "servicio": "notificaciones" }
+  ]
+}

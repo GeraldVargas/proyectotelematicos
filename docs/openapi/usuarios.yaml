@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: ColcaTrufis — API de Usuarios
+  version: 1.0.0
+  description: |
+    Registro, login y emisión de JWT RS256 (claims `sub`, `rol`, `exp`).
+    Todas las rutas se consumen a través del API Gateway.
+servers:
+  - url: http://localhost:8080
+    description: API Gateway local
+tags:
+  - name: Autenticación
+paths:
+  /api/usuarios/registro:
+    post:
+      tags: [Autenticación]
+      summary: Registrar un usuario de la app (rol `usuario`)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name: { type: string, example: María Quispe }
+                email: { type: string, format: email, example: maria@correo.bo }
+                password: { type: string, minLength: 8, example: clave12345 }
+                password_confirmation: { type: string, example: clave12345 }
+      responses:
+        '201':
+          description: Usuario creado y sesión iniciada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '422': { $ref: '#/components/responses/Validacion' }
+  /api/usuarios/login:
+    post:
+      tags: [Autenticación]
+      summary: Iniciar sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: demo@colcatrufis.local }
+                password: { type: string, example: demo12345 }
+      responses:
+        '200':
+          description: Credenciales correctas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '403':
+          description: Usuario desactivado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/Validacion' }
+  /api/usuarios/refresh:
+    post:
+      tags: [Autenticación]
+      summary: Renovar el access token
+      description: El refresh token se rota; el anterior deja de ser válido.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: Nuevo par de tokens
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tokens' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/usuarios/perfil:
+    get:
+      tags: [Autenticación]
+      summary: Perfil del usuario autenticado
+      responses:
+        '200':
+          description: Perfil
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT (RS256)
+  responses:
+    NoAutorizado:
+      description: Token ausente, inválido o expirado / credenciales incorrectas
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Validacion:
+      description: Datos inválidos
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items: { type: string }
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+    Usuario:
+      type: object
+      properties:
+        id: { type: integer, example: 2 }
+        name: { type: string, example: Usuario Demo }
+        email: { type: string, example: demo@colcatrufis.local }
+        rol: { type: string, enum: [admin, encargado, usuario] }
+        activo: { type: boolean }
+    Tokens:
+      type: object
+      properties:
+        token_type: { type: string, example: Bearer }
+        access_token:
+          type: string
+          description: 'JWT RS256. Header `kid: colcatrufis-1`. Claims: iss, sub, rol, iat, exp'
+        expires_in: { type: integer, example: 3600, description: Segundos de vida del access token }
+        refresh_token: { type: string, description: Opaco, 64 caracteres, válido 30 días }
+        usuario: { $ref: '#/components/schemas/Usuario' }

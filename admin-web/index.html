@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ColcaTrufis · Panel</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <!-- Login -->
+  <main id="vista-login" class="login" hidden>
+    <form id="form-login" class="tarjeta" autocomplete="on">
+      <h1>ColcaTrufis</h1>
+      <p class="sub">Panel administrativo</p>
+      <label>Correo
+        <input type="email" name="email" required autocomplete="username" placeholder="admin@colcatrufis.local">
+      </label>
+      <label>Contraseña
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <p id="login-error" class="error" role="alert" hidden></p>
+      <button type="submit">Ingresar</button>
+      <p class="nota">Autenticación JWT a través del API Gateway</p>
+    </form>
+  </main>
+
+  <!-- Mapa -->
+  <div id="vista-mapa" class="layout" hidden>
+    <aside class="panel">
+      <header>
+        <h1>ColcaTrufis</h1>
+        <div class="usuario"><span id="usuario-nombre"></span> · <span id="usuario-rol" class="rol"></span></div>
+        <button id="btn-salir" class="secundario" type="button">Salir</button>
+      </header>
+      <h2>Rutas <span id="rutas-total" class="contador"></span></h2>
+      <ul id="lista-rutas" class="rutas"></ul>
+      <label class="check"><input type="checkbox" id="toggle-paradas" checked> Mostrar paradas</label>
+      <p id="estado" class="estado" role="status"></p>
+      <footer class="atribucion">Rutas: © colaboradores de OpenStreetMap (ODbL)</footer>
+    </aside>
+    <div id="mapa" class="mapa"></div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

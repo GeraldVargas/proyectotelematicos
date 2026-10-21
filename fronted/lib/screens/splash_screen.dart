@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:colcatrufis/core/servicios.dart';
 // ignore_for_file: library_private_types_in_public_api
 
 class SplashScreen extends StatefulWidget {
@@ -59,8 +60,11 @@ class _SplashScreenState extends State<SplashScreen>
 
     _ctrl.forward();
 
-    Timer(const Duration(milliseconds: 2800), () {
-      if (mounted) Navigator.pushReplacementNamed(context, '/home');
+    // Con sesión JWT guardada va directo al mapa; si no, al login del Gateway
+    final haySesion = Servicios.auth.haySesion();
+    Timer(const Duration(milliseconds: 2800), () async {
+      final destino = await haySesion ? '/mapa' : '/login';
+      if (mounted) Navigator.pushReplacementNamed(context, destino);
     });
   }
 

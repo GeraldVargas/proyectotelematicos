@@ -1,0 +1,54 @@
+{
+  "$schema": "https://www.krakend.io/schema/v2.7/krakend.json",
+  "version": 3,
+  "name": "ColcaTrufis API Gateway",
+  "port": 8080,
+  "timeout": "10s",
+  "cache_ttl": "0s",
+  "extra_config": {
+    "security/cors": {
+      "allow_origins": {{ marshal .endpoints.cors_origenes }},
+      "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "allow_headers": ["Authorization", "Content-Type", "Accept"],
+      "expose_headers": ["Content-Type"],
+      "max_age": "12h"
+    },
+    "telemetry/logging": {
+      "level": "INFO",
+      "prefix": "[GATEWAY]",
+      "stdout": true
+    }
+  },
+  "endpoints": [
+    {{- range $i, $e := .endpoints.rutas }}{{ if $i }},{{ end }}
+    {
+      "endpoint": "{{ $e.endpoint }}",
+      "method": "{{ $e.method }}",
+      "output_encoding": "no-op",
+      {{- if $e.query }}
+      "input_query_strings": {{ marshal $e.query }},
+      {{- end }}
+      {{- if $e.publico }}
+      "input_headers": ["Content-Type", "Accept"],
+      {{- else }}
+      "input_headers": ["Content-Type", "Accept", "Authorization", "X-User-Id", "X-User-Rol"],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "jwk_local_path": "/keys/jwk.json",
+          "disable_jwk_security": true,
+          "propagate_claims": [["sub", "X-User-Id"], ["rol", "X-User-Rol"]]
+        }
+      },
+      {{- end }}
+      "backend": [
+        {
+          "url_pattern": "{{ $e.endpoint }}",
+          "host": ["{{ index $.endpoints.servicios $e.servicio }}"],
+          "encoding": "no-op"
+        }
+      ]
+    }
+    {{- end }}
+  ]
+}

@@ -1,0 +1,208 @@
+# Entorno local de ColcaTrufis con microservicios (Sprint 1).
+#   docker compose up -d --build
+# Único puerto público para las APIs: el Gateway en http://localhost:8080
+# Las versiones de las imágenes están fijadas para que todos tengan el mismo entorno.
+
+x-laravel-env: &laravel-env
+  APP_ENV: local
+  APP_DEBUG: "true"
+  LOG_CHANNEL: stderr
+  SESSION_DRIVER: array
+  CACHE_STORE: array
+  QUEUE_CONNECTION: sync
+  REDIS_CLIENT: predis
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  # Clave solo para desarrollo local; en producción cada servicio usa la suya
+  APP_KEY: base64:Q29sY2FUcnVmaXMtc29sby1wYXJhLWRlc2Fycm9sbG8=
+
+x-healthcheck-laravel: &healthcheck-laravel
+  test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost:8000/up') === false ? 1 : 0);"]
+  interval: 5s
+  timeout: 3s
+  retries: 30
+  start_period: 10s
+
+services:
+  gateway:
+    image: devopsfaith/krakend:2.7.2
+    command: ["run", "-c", "/etc/krakend/krakend.tmpl"]
+    environment:
+      FC_ENABLE: "1"
+      FC_SETTINGS: /etc/krakend/settings
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    volumes:
+      - ./gateway:/etc/krakend:ro
+      - jwt-keys:/keys:ro
+    depends_on:
+      api-usuarios:
+        condition: service_healthy # garantiza que /keys/jwk.json ya existe
+      api-ubicacion:
+        condition: service_started
+      api-notificaciones:
+        condition: service_started
+
+  # ---------- API de Usuarios ----------
+  api-usuarios:
+    build: ./services/api-usuarios
+    environment:
+      <<: *laravel-env
+      APP_NAME: api-usuarios
+      DB_CONNECTION: mysql
+      DB_HOST: db-usuarios
+      DB_DATABASE: usuarios
+      DB_USERNAME: usuarios
+      DB_PASSWORD: usuarios
+      JWT_KEYS_PATH: /keys
+      # Para usuarios:migrar-monolito (MySQL del monolito corriendo en la PC host)
+      MONOLITO_DB_HOST: ${MONOLITO_DB_HOST:-host.docker.internal}
+      MONOLITO_DB_PORT: ${MONOLITO_DB_PORT:-3306}
+      MONOLITO_DB_DATABASE: ${MONOLITO_DB_DATABASE:-colcatrufis}
+      MONOLITO_DB_USERNAME: ${MONOLITO_DB_USERNAME:-root}
+      MONOLITO_DB_PASSWORD: ${MONOLITO_DB_PASSWORD:-}
+    volumes:
+      - jwt-keys:/keys
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck: *healthcheck-laravel
+    depends_on:
+      db-usuarios:
+        condition: service_healthy
+
+  db-usuarios:
+    image: mysql:8.4.3
+    environment:
+      MYSQL_DATABASE: usuarios
+      MYSQL_USER: usuarios
+      MYSQL_PASSWORD: usuarios
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-usuarios:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # ---------- API de Ubicación ----------
+  api-ubicacion:
+    build: ./services/api-ubicacion
+    environment:
+      <<: *laravel-env
+      APP_NAME: api-ubicacion
+      DB_CONNECTION: pgsql
+      DB_HOST: db-ubicacion
+      DB_PORT: "5432"
+      DB_DATABASE: ubicacion
+      DB_USERNAME: ubicacion
+      DB_PASSWORD: ubicacion
+      MONOLITO_DB_HOST: ${MONOLITO_DB_HOST:-host.docker.internal}
+      MONOLITO_DB_PORT: ${MONOLITO_DB_PORT:-3306}
+      MONOLITO_DB_DATABASE: ${MONOLITO_DB_DATABASE:-colcatrufis}
+      MONOLITO_DB_USERNAME: ${MONOLITO_DB_USERNAME:-root}
+      MONOLITO_DB_PASSWORD: ${MONOLITO_DB_PASSWORD:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck: *healthcheck-laravel
+    depends_on:
+      db-ubicacion:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db-ubicacion:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ubicacion
+      POSTGRES_USER: ubicacion
+      POSTGRES_PASSWORD: ubicacion
+    ports:
+      - "${UBICACION_DB_PORT:-5433}:5432" # para QGIS / DBeaver
+    volumes:
+      - db-ubicacion:/var/lib/postgresql/data
+      - ./docker/postgis-init/10-test-db.sql:/docker-entrypoint-initdb.d/20-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ubicacion -d ubicacion"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # ---------- API de Notificaciones ----------
+  api-notificaciones:
+    build: ./services/api-notificaciones
+    environment: &notificaciones-env
+      <<: *laravel-env
+      APP_NAME: api-notificaciones
+      DB_CONNECTION: mysql
+      DB_HOST: db-notificaciones
+      DB_DATABASE: notificaciones
+      DB_USERNAME: notificaciones
+      DB_PASSWORD: notificaciones
+    healthcheck: *healthcheck-laravel
+    depends_on:
+      db-notificaciones:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker-notificaciones:
+    build: ./services/api-notificaciones
+    command: ["php", "artisan", "eventos:consumir"]
+    environment:
+      <<: *notificaciones-env
+      RUN_MIGRATIONS: "false"
+    restart: unless-stopped
+    depends_on:
+      api-notificaciones:
+        condition: service_healthy
+
+  db-notificaciones:
+    image: mysql:8.4.3
+    environment:
+      MYSQL_DATABASE: notificaciones
+      MYSQL_USER: notificaciones
+      MYSQL_PASSWORD: notificaciones
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-notificaciones:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Broker de eventos entre servicios (docs/adr/0002)
+  redis:
+    image: redis:7.4.1-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # ---------- Herramientas ----------
+  swagger-ui:
+    image: swaggerapi/swagger-ui:v5.17.14
+    environment:
+      URLS: >-
+        [{"url": "openapi/usuarios.yaml", "name": "API de Usuarios"},
+         {"url": "openapi/ubicacion.yaml", "name": "API de Ubicación"},
+         {"url": "openapi/notificaciones.yaml", "name": "API de Notificaciones"}]
+    ports:
+      - "${SWAGGER_PORT:-8090}:8080"
+    volumes:
+      - ./docs/openapi:/usr/share/nginx/html/openapi:ro
+
+  admin-web:
+    image: nginx:1.27.2-alpine
+    ports:
+      - "${ADMIN_WEB_PORT:-8081}:80"
+    volumes:
+      - ./admin-web:/usr/share/nginx/html:ro
+
+volumes:
+  jwt-keys:
+  db-usuarios:
+  db-ubicacion:
+  db-notificaciones:

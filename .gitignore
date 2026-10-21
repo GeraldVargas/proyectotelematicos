@@ -1,2 +1,16 @@
+# Documentos internos del equipo (no se publican)
+telematicosDocs/
+
+# macOS
+.DS_Store
+
+# Claves JWT generadas localmente
+*.pem
+**/storage/keys/
+
+# Resultados de pruebas de carga (se versionan solo los informes .md)
+perf/resultados/*.json
+
+# Logs de JVM (Android)
 hs_err_pid*.log
 replay_pid*.log

@@ -30,6 +30,10 @@ dependencies:
 
   # Estado
   provider: ^6.1.1      # Gestión del estado de la aplicación
+
+  # Sprint 1 — microservicios
+  flutter_secure_storage: ^10.3.4 # JWT guardado cifrado (Keystore / Keychain)
+  maplibre_gl: ^0.27.1            # Mapa vectorial; plan B: flutter_map + vector_map_tiles
   
 dev_dependencies:
   flutter_test:
@@ -42,4 +46,5 @@ flutter:
   assets:
     - assets/images/    # Asegúrate de que las imágenes estén en la carpeta correcta
     - assets/geojson/colcapirhua.geojson  # Para que las imágenes funcionen
+    - assets/mocks/   # Respuestas del contrato OpenAPI para USE_MOCKS=true
   generate: true

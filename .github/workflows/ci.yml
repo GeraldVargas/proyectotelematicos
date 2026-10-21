@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  servicios:
+    name: Tests y lint · ${{ matrix.servicio }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        servicio: [api-usuarios, api-ubicacion, api-notificaciones]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.servicio }}
+    services:
+      # Solo lo usa api-ubicacion; levantarlo en las tres no estorba
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: ubicacion_test
+          POSTGRES_USER: ubicacion
+          POSTGRES_PASSWORD: ubicacion
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ubicacion" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_USERNAME: ubicacion
+      DB_PASSWORD: ubicacion
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_pgsql, pdo_mysql, pdo_sqlite
+          coverage: none
+      - name: Cache de Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ matrix.servicio }}-${{ hashFiles(format('services/{0}/composer.lock', matrix.servicio)) }}
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - name: Lint (Laravel Pint)
+        run: vendor/bin/pint --test
+      - name: Tests
+        run: php artisan test
+
+  contratos:
+    name: Contratos OpenAPI, Gateway y Compose
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar OpenAPI
+        run: |
+          for f in docs/openapi/*.yaml; do
+            docker run --rm -v "$PWD/docs/openapi:/specs:ro" redocly/cli:1.25.11 lint --extends=minimal "/specs/$(basename "$f")"
+          done
+      - name: Validar configuración del Gateway
+        run: |
+          mkdir -p /tmp/keys && echo '{"keys":[]}' > /tmp/keys/jwk.json
+          docker run --rm -e FC_ENABLE=1 -e FC_SETTINGS=/etc/krakend/settings \
+            -v "$PWD/gateway:/etc/krakend:ro" -v /tmp/keys:/keys:ro \
+            devopsfaith/krakend:2.7.2 check -c /etc/krakend/krakend.tmpl -t
+      - name: Validar docker-compose.yml
+        run: docker compose config -q
+      - name: Validar GeoJSON semilla
+        run: python3 -c "import json; d=json.load(open('services/api-ubicacion/database/data/rutas_colcapirhua.geojson')); assert d['type']=='FeatureCollection' and len(d['features'])>=3"
+
+  admin-web:
+    name: Panel web (sintaxis)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node --check admin-web/app.js && node --check admin-web/config.js

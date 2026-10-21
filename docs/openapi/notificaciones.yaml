@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: ColcaTrufis — API de Notificaciones
+  version: 1.0.0
+  description: |
+    Notificaciones del usuario autenticado. El usuario se identifica con el claim `sub` del JWT,
+    que el Gateway reenvía en el header `X-User-Id`.
+
+    Las notificaciones se generan al consumir eventos (`ruta.actualizada`) de la cola Redis
+    `colcatrufis:eventos`. Formato del evento: `docs/eventos/ruta.actualizada.json`.
+servers:
+  - url: http://localhost:8080
+    description: API Gateway local
+security:
+  - bearerAuth: []
+paths:
+  /api/notificaciones:
+    get:
+      summary: Notificaciones del usuario, de la más reciente a la más antigua
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: por_pagina, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200':
+          description: Página de notificaciones (formato de paginación de Laravel)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_page: { type: integer }
+                  per_page: { type: integer }
+                  total: { type: integer }
+                  last_page: { type: integer }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Notificacion' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/notificaciones/suscripciones:
+    get:
+      summary: Líneas a las que está suscrito el usuario
+      responses:
+        '200':
+          description: Suscripciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Suscripcion' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+    post:
+      summary: Suscribirse a los avisos de una línea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [linea]
+              properties:
+                linea: { type: string, example: '252' }
+      responses:
+        '201':
+          description: Suscripción creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suscripcion' }
+        '200':
+          description: Ya estaba suscrito
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suscripcion' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '422': { description: Datos inválidos }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT (RS256)
+  responses:
+    NoAutorizado:
+      description: Token ausente, inválido o expirado
+  schemas:
+    Suscripcion:
+      type: object
+      properties:
+        id: { type: integer }
+        linea: { type: string }
+        created_at: { type: string, format: date-time }
+    Notificacion:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        tipo: { type: string, example: ruta.actualizada }
+        titulo: { type: string, example: Cambio en la línea 252 }
+        mensaje: { type: string }
+        datos:
+          type: object
+          nullable: true
+          description: Copia de `datos` del evento que originó la notificación
+        evento_id: { type: string, format: uuid, nullable: true }
+        leida_en: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Ruta;
 use App\Services\CargadorRutas;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,11 @@ class DatabaseSeeder extends Seeder
 
         foreach ($datos['features'] as $feature) {
             $p = $feature['properties'];
+
+            // Sembrar solo datos nuevos: reiniciar Docker no debe borrar ediciones del administrador.
+            if (Ruta::where('osm_relation_id', $p['osm_relation_id'])->exists()) {
+                continue;
+            }
 
             $cargador->guardar(
                 ['osm_relation_id' => $p['osm_relation_id']],

@@ -7,6 +7,10 @@
 
   const $ = (id) => document.getElementById(id);
   let mapa = null;
+  let popupAbierto = null;
+  let datosRutas = null;
+  let editor = null;
+  let eligiendoCercanas = false;
 
   // ---------- Sesión (JWT emitido por la API de Usuarios) ----------
 
@@ -51,18 +55,21 @@
   }
 
   /** GET al Gateway con el JWT; si responde 401 intenta un refresh una sola vez. */
-  async function api(ruta, reintento = true) {
+  async function api(ruta, opciones = {}, reintento = true) {
     const token = sesion.leer()?.access_token;
     const res = await fetch(`${CFG.gatewayUrl}${ruta}`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+      method: opciones.metodo || 'GET',
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(opciones.cuerpo ? { 'Content-Type': 'application/json' } : {}) },
+      ...(opciones.cuerpo ? { body: JSON.stringify(opciones.cuerpo) } : {}),
     });
     if (res.status === 401) {
-      if (reintento && (await renovar())) return api(ruta, false);
+      if (reintento && (await renovar())) return api(ruta, opciones, false);
       cerrarSesion('Tu sesión expiró. Vuelve a ingresar.');
       throw new Error('No autenticado');
     }
-    if (!res.ok) throw new Error(`Error ${res.status} en ${ruta}`);
-    return res.json();
+    const cuerpo = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(cuerpo.message || `Error ${res.status} en ${ruta}`);
+    return cuerpo;
   }
 
   // ---------- Vistas ----------
@@ -76,6 +83,10 @@
   }
 
   function cerrarSesion(mensaje) {
+    popupAbierto?.remove();
+    popupAbierto = null;
+    editor = null;
+    $('editor-ruta').hidden = true;
     sesion.borrar();
     if (mapa) { mapa.remove(); mapa = null; }
     mostrarLogin(mensaje);
@@ -97,12 +108,40 @@
     });
     mapa.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapa.addControl(new maplibregl.ScaleControl({ unit: 'metric' }));
+    mapa.on('click', (e) => {
+      if (editor?.agregando) {
+        editor.coordenadas.push([e.lngLat.lng, e.lngLat.lat]);
+        actualizarEdicion();
+      } else if (eligiendoCercanas && !editor) {
+        buscarCercanas(e.lngLat);
+      }
+    });
+    mapa.on('mousemove', (e) => {
+      if (editor?.arrastrando == null) return;
+      editor.coordenadas[editor.arrastrando] = [e.lngLat.lng, e.lngLat.lat];
+      actualizarEdicion();
+    });
+    mapa.on('mouseup', () => {
+      if (editor) editor.arrastrando = null;
+      mapa?.dragPan.enable();
+    });
 
+    await cargarDatos();
+  }
+
+  async function cargarDatos() {
     try {
       const [rutas, paradas] = await Promise.all([api('/api/ubicacion/rutas'), api('/api/ubicacion/paradas')]);
       if (!mapa) return; // se cerró la sesión mientras cargaba
       if (!mapa.isStyleLoaded()) await new Promise((ok) => mapa.once('load', ok));
-      dibujar(rutas, paradas);
+      datosRutas = rutas;
+      if (mapa.getSource('rutas')) {
+        mapa.getSource('rutas').setData(rutas);
+        mapa.getSource('paradas').setData(paradas);
+        listarRutas(rutas.features);
+      } else {
+        dibujar(rutas, paradas);
+      }
       estado(`${rutas.features.length} rutas y ${paradas.features.length} paradas desde PostGIS`);
     } catch (e) {
       if (e.message !== 'No autenticado') estado(e.message);
@@ -156,12 +195,14 @@
     });
 
     const popupRuta = (e) => {
+      if (editor || eligiendoCercanas) return;
       const p = e.features[0].properties;
       popup(e.lngLat, `<strong>Línea ${esc(p.linea)}</strong><br>${esc(p.nombre)}<br><small>${esc(p.sindicato || 'Sin sindicato')}</small>`);
     };
     mapa.on('click', 'rutas', popupRuta);
     mapa.on('click', 'rutas-suspendidas', popupRuta);
     mapa.on('click', 'paradas', (e) => {
+      if (editor || eligiendoCercanas) return;
       const p = e.features[0].properties;
       // MapLibre serializa los arrays de properties como texto
       const lineas = JSON.parse(p.rutas || '[]').map((r) => r.linea).join(', ');
@@ -194,6 +235,15 @@
         e.target.checked ? visibles.add(f.id) : visibles.delete(f.id);
         filtrarRutas([...visibles]);
       });
+      if (sesion.leer()?.usuario?.rol === 'admin') {
+        const editar = document.createElement('button');
+        editar.type = 'button';
+        editar.className = 'secundario ruta-editar';
+        editar.textContent = 'Editar trazado';
+        editar.setAttribute('aria-label', `Editar línea ${f.properties.linea}`);
+        editar.addEventListener('click', () => iniciarEdicion(f));
+        li.append(editar);
+      }
       lista.append(li);
     }
   }
@@ -213,12 +263,128 @@
   }
 
   function popup(lngLat, html) {
-    new maplibregl.Popup({ closeButton: true }).setLngLat(lngLat).setHTML(html).addTo(mapa);
+    popupAbierto?.remove();
+    popupAbierto = new maplibregl.Popup({ closeButton: true }).setLngLat(lngLat).setHTML(html).addTo(mapa);
   }
 
   function esc(texto) {
     return String(texto ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   }
+
+  // ---------- Edición del trazado (Sprint 2) ----------
+
+  function iniciarEdicion(feature) {
+    popupAbierto?.remove();
+    popupAbierto = null;
+    cancelarEdicion();
+    eligiendoCercanas = false;
+    $('btn-cercanas').setAttribute('aria-pressed', 'false');
+    editor = { feature, coordenadas: structuredClone(feature.geometry.coordinates), seleccionado: null, arrastrando: null, agregando: false };
+    $('editor-linea').textContent = feature.properties.linea;
+    const form = $('form-ruta');
+    form.reset();
+    for (const campo of ['nombre', 'estado', 'color']) form.elements[campo].value = feature.properties[campo];
+    $('editor-error').hidden = true;
+    $('editor-ruta').hidden = false;
+    mapa.addSource('edicion', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    mapa.addLayer({ id: 'edicion-linea', type: 'line', source: 'edicion', filter: ['==', ['geometry-type'], 'LineString'], paint: { 'line-color': '#f59e0b', 'line-width': 5 } });
+    mapa.addLayer({ id: 'edicion-puntos', type: 'circle', source: 'edicion', filter: ['==', ['geometry-type'], 'Point'], paint: {
+      'circle-color': ['case', ['get', 'seleccionado'], '#e11d48', '#ffffff'], 'circle-radius': 6,
+      'circle-stroke-color': '#92400e', 'circle-stroke-width': 2,
+    } });
+    mapa.on('mousedown', 'edicion-puntos', seleccionarPunto);
+    actualizarEdicion();
+    encuadrar([feature]);
+    $('editor-ruta').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function seleccionarPunto(e) {
+    if (!editor || editor.agregando) return;
+    e.preventDefault();
+    editor.seleccionado = Number(e.features[0].properties.indice);
+    editor.arrastrando = editor.seleccionado;
+    mapa.dragPan.disable();
+    actualizarEdicion();
+  }
+
+  function actualizarEdicion() {
+    if (!editor || !mapa) return;
+    mapa.getSource('edicion').setData({ type: 'FeatureCollection', features: [
+      { type: 'Feature', geometry: { type: 'LineString', coordinates: editor.coordenadas }, properties: {} },
+      ...editor.coordenadas.map((coordinates, indice) => ({ type: 'Feature', geometry: { type: 'Point', coordinates }, properties: { indice, seleccionado: indice === editor.seleccionado } })),
+    ] });
+    $('editor-quitar').disabled = editor.seleccionado == null || editor.coordenadas.length <= 2;
+    $('editor-agregar').setAttribute('aria-pressed', String(editor.agregando));
+    mapa.getCanvas().style.cursor = editor.agregando ? 'crosshair' : '';
+  }
+
+  function cancelarEdicion() {
+    if (mapa) {
+      mapa.off('mousedown', 'edicion-puntos', seleccionarPunto);
+      for (const id of ['edicion-puntos', 'edicion-linea']) if (mapa.getLayer(id)) mapa.removeLayer(id);
+      if (mapa.getSource('edicion')) mapa.removeSource('edicion');
+      mapa.dragPan.enable();
+      mapa.getCanvas().style.cursor = '';
+    }
+    editor = null;
+    $('editor-ruta').hidden = true;
+  }
+
+  async function buscarCercanas(punto) {
+    eligiendoCercanas = false;
+    $('btn-cercanas').setAttribute('aria-pressed', 'false');
+    estado('Buscando paradas cercanas…');
+    try {
+      const resultado = await api(`/api/ubicacion/paradas/cercanas?lat=${punto.lat}&lng=${punto.lng}&radio=300`);
+      $('lista-cercanas').replaceChildren();
+      for (const feature of resultado.features) {
+        const li = document.createElement('li');
+        li.textContent = `${feature.properties.nombre} · ${Math.round(feature.properties.distancia_m)} m`;
+        $('lista-cercanas').append(li);
+      }
+      estado(resultado.features.length ? `${resultado.features.length} paradas a menos de 300 m` : 'No hay paradas a menos de 300 m');
+    } catch (error) { estado(error.message); }
+  }
+
+  $('form-ruta').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!editor) return;
+    const datos = new FormData(e.target);
+    $('editor-guardar').disabled = true;
+    $('editor-error').hidden = true;
+    try {
+      await api(`/api/ubicacion/rutas/${editor.feature.id}`, { metodo: 'PUT', cuerpo: {
+        geometry: { type: 'LineString', coordinates: editor.coordenadas },
+        nombre: datos.get('nombre'), estado: datos.get('estado'), color: datos.get('color'), descripcion: datos.get('descripcion'),
+      } });
+      cancelarEdicion();
+      await cargarDatos();
+      estado('Ruta guardada. Se enviará un aviso a los usuarios suscritos.');
+    } catch (error) {
+      $('editor-error').textContent = error.message;
+      $('editor-error').hidden = false;
+    } finally { $('editor-guardar').disabled = false; }
+  });
+  $('editor-cancelar').addEventListener('click', cancelarEdicion);
+  $('editor-agregar').addEventListener('click', () => { if (editor) { editor.agregando = !editor.agregando; actualizarEdicion(); } });
+  $('editor-restablecer').addEventListener('click', () => {
+    if (!editor) return;
+    editor.coordenadas = structuredClone(editor.feature.geometry.coordinates);
+    editor.seleccionado = null;
+    actualizarEdicion();
+  });
+  $('editor-quitar').addEventListener('click', () => {
+    if (!editor || editor.seleccionado == null || editor.coordenadas.length <= 2) return;
+    editor.coordenadas.splice(editor.seleccionado, 1);
+    editor.seleccionado = null;
+    actualizarEdicion();
+  });
+  $('btn-cercanas').addEventListener('click', () => {
+    cancelarEdicion();
+    eligiendoCercanas = !eligiendoCercanas;
+    $('btn-cercanas').setAttribute('aria-pressed', String(eligiendoCercanas));
+    estado(eligiendoCercanas ? 'Selecciona una ubicación en el mapa.' : 'Búsqueda cancelada.');
+  });
 
   // ---------- Eventos ----------
 

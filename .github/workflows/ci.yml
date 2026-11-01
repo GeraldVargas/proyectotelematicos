@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
@@ -42,7 +45,7 @@ jobs:
         with:
           php-version: "8.3"
           extensions: pdo_pgsql, pdo_mysql, pdo_sqlite
-          coverage: none
+          coverage: pcov
       - name: Cache de Composer
         uses: actions/cache@v4
         with:
@@ -53,7 +56,12 @@ jobs:
       - name: Lint (Laravel Pint)
         run: vendor/bin/pint --test
       - name: Tests
-        run: php artisan test
+        run: php artisan test --coverage-clover coverage.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cobertura-${{ matrix.servicio }}
+          path: services/${{ matrix.servicio }}/coverage.xml
 
   contratos:
     name: Contratos OpenAPI, Gateway y Compose
@@ -85,3 +93,58 @@ jobs:
         with:
           node-version: "20"
       - run: node --check admin-web/app.js && node --check admin-web/config.js
+
+  flutter:
+    name: Flutter (red, mocks y compilacion web)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: fronted
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test
+      - run: flutter build web --no-wasm-dry-run --dart-define=GATEWAY_URL=http://localhost:8080
+
+  integracion:
+    name: Docker, JWT, CORS, eventos y carga de humo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      COMPOSE_PROJECT_NAME: colcatrufis-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Construir desde checkout sin dependencias
+        run: docker compose up -d --build --wait --wait-timeout 300
+      - name: Smoke completo (sprints 1 y 2)
+        shell: pwsh
+        run: ./scripts/smoke-test.ps1 -Sprint2
+      - name: Smoke original de Linux
+        run: bash scripts/smoke-test.sh
+      - name: Panel en Chrome real
+        run: node scripts/browser-qa.mjs
+      - name: k6 funcional (alcance parcial, no linea base del monolito)
+        shell: pwsh
+        run: ./perf/run.ps1 -Target microservicios -Network colcatrufis-ci_default -BaseUrl http://gateway:8080 -Vus 5 -Duracion 10s -Rampa 5s -Bajada 5s -SinRadiotaxis
+      - name: Guardar registros
+        if: always()
+        run: docker compose logs --no-color > docker-compose.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integracion-y-rendimiento
+          path: |
+            docker-compose.log
+            docs/qa/artifacts/
+            perf/resultados/
+      - name: Apagar entorno desechable de CI
+        if: always()
+        run: docker compose down -v

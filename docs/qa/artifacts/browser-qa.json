@@ -1,0 +1,22 @@
+{
+  "fecha": "2026-10-27T21:41:42.656Z",
+  "panel": "http://localhost:8081",
+  "checks": [
+    "Administrador ve mapa y al menos cuatro rutas",
+    "Desmarcar una ruta actualiza el filtro del mapa",
+    "Ocultar paradas cambia la capa del mapa",
+    "Seleccionar ruta muestra línea y sindicato",
+    "Seleccionar parada muestra sus líneas",
+    "Editor administrativo muestra puntos del trazado",
+    "Arrastrar un punto cambia el trazado temporal",
+    "Quitar punto elimina el vértice seleccionado",
+    "Restablecer recupera el trazado original",
+    "Cancelar edición retira el trazado temporal",
+    "Guardar desde el editor web confirma la actualización del trazado",
+    "Panel muestra paradas cercanas obtenidas del Gateway",
+    "El rol usuario no entra al panel ni conserva sesión administrativa",
+    "Swagger UI muestra los tres servicios",
+    "Swagger Try it out ejecuta GET de rutas con JWT y devuelve GeoJSON"
+  ],
+  "status": "passed"
+}

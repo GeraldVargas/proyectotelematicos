@@ -27,9 +27,19 @@ http.Client crearGatewayMock() {
           headers: json,
         );
       case 'GET /api/ubicacion/rutas':
-        return http.Response(await rootBundle.loadString('assets/mocks/ubicacion_rutas.json'), 200, headers: json);
+        final data = jsonDecode(await rootBundle.loadString('assets/mocks/ubicacion_rutas.json')) as Map<String, dynamic>;
+        final linea = req.url.queryParameters['linea'];
+        if (linea != null) {
+          data['features'] = (data['features'] as List).where((f) => f['properties']['linea'] == linea).toList();
+        }
+        return http.Response(jsonEncode(data), 200, headers: json);
       case 'GET /api/ubicacion/paradas':
-        return http.Response(await rootBundle.loadString('assets/mocks/ubicacion_paradas.json'), 200, headers: json);
+        final data = jsonDecode(await rootBundle.loadString('assets/mocks/ubicacion_paradas.json')) as Map<String, dynamic>;
+        final rutaId = int.tryParse(req.url.queryParameters['ruta_id'] ?? '');
+        if (rutaId != null) {
+          data['features'] = (data['features'] as List).where((f) => (f['properties']['rutas'] as List).any((r) => r['id'] == rutaId)).toList();
+        }
+        return http.Response(jsonEncode(data), 200, headers: json);
       default:
         return http.Response(jsonEncode({'message': 'Mock sin respuesta para ${req.url.path}'}), 404, headers: json);
     }

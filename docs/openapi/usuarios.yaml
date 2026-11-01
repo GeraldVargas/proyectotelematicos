@@ -10,9 +10,11 @@ servers:
     description: API Gateway local
 tags:
   - name: Autenticación
+    description: Registro, acceso JWT, renovación y perfil de usuario
 paths:
   /api/usuarios/registro:
     post:
+      operationId: registrarUsuario
       tags: [Autenticación]
       summary: Registrar un usuario de la app (rol `usuario`)
       security: []
@@ -37,6 +39,7 @@ paths:
         '422': { $ref: '#/components/responses/Validacion' }
   /api/usuarios/login:
     post:
+      operationId: iniciarSesion
       tags: [Autenticación]
       summary: Iniciar sesión
       security: []
@@ -65,6 +68,7 @@ paths:
         '422': { $ref: '#/components/responses/Validacion' }
   /api/usuarios/refresh:
     post:
+      operationId: renovarSesion
       tags: [Autenticación]
       summary: Renovar el access token
       description: El refresh token se rota; el anterior deja de ser válido.
@@ -87,6 +91,7 @@ paths:
         '401': { $ref: '#/components/responses/NoAutorizado' }
   /api/usuarios/perfil:
     get:
+      operationId: obtenerPerfil
       tags: [Autenticación]
       summary: Perfil del usuario autenticado
       responses:
@@ -144,5 +149,5 @@ components:
           type: string
           description: 'JWT RS256. Header `kid: colcatrufis-1`. Claims: iss, sub, rol, iat, exp'
         expires_in: { type: integer, example: 3600, description: Segundos de vida del access token }
-        refresh_token: { type: string, description: Opaco, 64 caracteres, válido 30 días }
+        refresh_token: { type: string, description: 'Opaco, 64 caracteres, válido 30 días' }
         usuario: { $ref: '#/components/schemas/Usuario' }

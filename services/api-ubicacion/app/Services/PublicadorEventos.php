@@ -12,7 +12,15 @@ class PublicadorEventos
      */
     public function publicar(string $tipo, array $datos): array
     {
-        $evento = [
+        $evento = $this->preparar($tipo, $datos);
+        $this->enviar($evento);
+
+        return $evento;
+    }
+
+    public function preparar(string $tipo, array $datos): array
+    {
+        return [
             'id' => (string) Str::uuid(),
             'tipo' => $tipo,
             'version' => 1,
@@ -21,9 +29,11 @@ class PublicadorEventos
             'datos' => $datos,
         ];
 
+    }
+
+    public function enviar(array $evento): void
+    {
         Redis::connection(config('eventos.conexion_redis'))
             ->lpush(config('eventos.cola'), json_encode($evento, JSON_UNESCAPED_UNICODE));
-
-        return $evento;
     }
 }

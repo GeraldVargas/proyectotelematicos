@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\ParadaController;
 use App\Http\Controllers\RutaController;
+use App\Http\Middleware\AdministradorDelGateway;
 use Illuminate\Support\Facades\Route;
 
 // Todas las rutas son protegidas: el Gateway valida el JWT antes de reenviar.
-// Fuera del Sprint 1: paradas/cercanas, radiotaxis y PUT rutas/{id}.
+// Sprint 2: consultas de cercanía y edición administrativa con eventos persistidos.
 Route::get('/rutas', [RutaController::class, 'index']);
 Route::get('/rutas/{id}', [RutaController::class, 'show'])->whereNumber('id');
 Route::get('/paradas', [ParadaController::class, 'index']);
+Route::get('/paradas/cercanas', [ParadaController::class, 'cercanas']);
+Route::put('/rutas/{id}', [RutaController::class, 'update'])->whereNumber('id')->middleware(AdministradorDelGateway::class);

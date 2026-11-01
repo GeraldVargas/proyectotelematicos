@@ -14,3 +14,6 @@ perf/resultados/*.json
 # Logs de JVM (Android)
 hs_err_pid*.log
 replay_pid*.log
+
+# Copias y entornos desechables de verificación local
+.verification/

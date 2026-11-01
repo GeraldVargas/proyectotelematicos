@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ColcaTrufis — API de Ubicación
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Rutas y paradas almacenadas en PostGIS (EPSG:4326) y servidas como GeoJSON (RFC 7946).
     Las coordenadas siempre van en orden **[longitud, latitud]**.
@@ -14,15 +14,18 @@ security:
   - bearerAuth: []
 tags:
   - name: Rutas
+    description: Recorridos de transporte y edición administrativa
   - name: Paradas
+    description: Paradas y búsqueda espacial por distancia
 paths:
   /api/ubicacion/rutas:
     get:
+      operationId: listarRutas
       tags: [Rutas]
       summary: Todas las rutas como FeatureCollection
       parameters:
         - { name: linea, in: query, schema: { type: string }, example: '252' }
-        - { name: sindicato, in: query, schema: { type: string }, description: Coincidencia parcial, sin distinguir mayúsculas }
+        - { name: sindicato, in: query, schema: { type: string }, description: 'Coincidencia parcial, sin distinguir mayúsculas' }
         - { name: estado, in: query, schema: { type: string, enum: [activa, suspendida] } }
       responses:
         '200':
@@ -39,7 +42,51 @@ paths:
                         items: { $ref: '#/components/schemas/RutaFeature' }
         '401': { $ref: '#/components/responses/NoAutorizado' }
   /api/ubicacion/rutas/{id}:
+    put:
+      operationId: actualizarRuta
+      tags: [Rutas]
+      summary: Editar un trazado (solo administrador)
+      description: |
+        El Gateway valida el JWT y propaga la identidad. Solo el rol admin puede editar.
+        Se guardan la ruta y su evento ruta.actualizada en una misma transacción.
+        El worker de salida reintenta publicarlo en Redis si el broker no está disponible.
+        Las paradas y el número de línea se conservan. Coordenadas en orden [lng, lat].
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EdicionRuta' }
+      responses:
+        '200':
+          description: Trazado guardado; el evento queda pendiente de entrega asíncrona
+          content:
+            application/geo+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RutaFeature'
+                  - type: object
+                    properties:
+                      meta:
+                        type: object
+                        properties:
+                          evento_id: { type: string, format: uuid }
+                          notificacion: { type: string, enum: [pendiente] }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '403':
+          description: El usuario autenticado no tiene rol admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Ruta no encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/Validacion' }
     get:
+      operationId: obtenerRuta
       tags: [Rutas]
       summary: Geometría, atributos y paradas de una ruta
       parameters:
@@ -73,6 +120,7 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
   /api/ubicacion/paradas:
     get:
+      operationId: listarParadas
       tags: [Paradas]
       summary: Paradas como puntos GeoJSON
       parameters:
@@ -91,6 +139,40 @@ paths:
                         type: array
                         items: { $ref: '#/components/schemas/ParadaFeature' }
         '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/ubicacion/paradas/cercanas:
+    get:
+      operationId: buscarParadasCercanas
+      tags: [Paradas]
+      summary: Paradas cercanas ordenadas por distancia en metros
+      description: Búsqueda ST_DWithin sobre geography con índice GiST; EPSG 4326.
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number, minimum: -90, maximum: 90 }, example: -17.3895 }
+        - { name: lng, in: query, required: true, schema: { type: number, minimum: -180, maximum: 180 }, example: -66.2405 }
+        - { name: radio, in: query, schema: { type: number, minimum: 1, maximum: 5000, default: 300 }, description: Radio en metros }
+        - { name: limite, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        '200':
+          description: FeatureCollection, posiblemente vacía, ordenada por distancia e ID
+          content:
+            application/geo+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FeatureCollection'
+                  - type: object
+                    properties:
+                      features:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/ParadaFeature'
+                            - type: object
+                              properties:
+                                properties:
+                                  type: object
+                                  properties:
+                                    distancia_m: { type: number, minimum: 0, example: 112.35 }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '422': { $ref: '#/components/responses/Validacion' }
 components:
   securitySchemes:
     bearerAuth:
@@ -98,9 +180,47 @@ components:
       scheme: bearer
       bearerFormat: JWT (RS256)
   responses:
+    Validacion:
+      description: Coordenadas, radio, trazado o atributos inválidos
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items: { type: string }
     NoAutorizado:
       description: Token ausente, inválido o expirado (lo responde el Gateway)
   schemas:
+    EdicionRuta:
+      type: object
+      required: [geometry, descripcion]
+      properties:
+        geometry:
+          type: object
+          required: [type, coordinates]
+          additionalProperties: false
+          properties:
+            type: { type: string, enum: [LineString] }
+            coordinates:
+              type: array
+              minItems: 2
+              maxItems: 10000
+              description: Al menos dos posiciones diferentes, longitud [-180,180] y latitud [-90,90]
+              items: { $ref: '#/components/schemas/Posicion' }
+              example: [[-66.2405, -17.3895], [-66.2380, -17.3901]]
+        descripcion: { type: string, minLength: 5, maxLength: 500, example: Desvío temporal por obras en la vía }
+        nombre: { type: string, minLength: 1, maxLength: 255 }
+        sindicato: { type: string, nullable: true, maxLength: 255 }
+        estado: { type: string, enum: [activa, suspendida] }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        horario: { type: string, nullable: true, maxLength: 255 }
+        tarifa: { type: number, nullable: true, minimum: 0, maximum: 9999.99 }
+        frecuencia_min: { type: integer, nullable: true, minimum: 1, maximum: 1440 }
     Error:
       type: object
       properties:

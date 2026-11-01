@@ -1,0 +1,42 @@
+{
+  "fecha": "2026-10-27T21:18:17.403Z",
+  "estado": "correcto",
+  "proyecto": "colcatrufis-verify-1793135895150",
+  "origen": "Fuentes versionables del arbol de trabajo actual; no es un clon remoto ni una descarga sin cache.",
+  "cacheDocker": "existente",
+  "basesDeDatos": "volumenes nuevos, separados del entorno principal",
+  "equipo": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "ramGiB": 7.7,
+    "so": "Windows_NT 10.0.26200"
+  },
+  "arranqueSegundos": 97.99,
+  "semillaAntesDeTests": {
+    "driver": "mysql",
+    "users": 2,
+    "demo": true,
+    "password_ok": true
+  },
+  "tests": [
+    {
+      "servicio": "api-usuarios",
+      "resultado": "Tests:    11 passed (37 assertions)"
+    },
+    {
+      "servicio": "api-ubicacion",
+      "resultado": "Tests:    17 passed (3228 assertions)"
+    },
+    {
+      "servicio": "api-notificaciones",
+      "resultado": "Tests:    5 passed (16 assertions)"
+    }
+  ],
+  "semillaDespuesDeTests": {
+    "driver": "mysql",
+    "users": 2,
+    "demo": true,
+    "password_ok": true
+  },
+  "smoke": "Resultado: 40 comprobaciones correctas.",
+  "limpieza": "correcta"
+}

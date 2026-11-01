@@ -11,11 +11,14 @@ case "$TARGET" in
   *) echo "Uso: $0 monolito|microservicios" >&2; exit 1 ;;
 esac
 DIR=$(cd "$(dirname "$0")" && pwd)
+mkdir -p "$DIR/resultados"
 docker run --rm -i \
+  --user "$(id -u):$(id -g)" \
   --add-host=host.docker.internal:host-gateway \
   -v "$DIR/k6:/scripts:ro" -v "$DIR/resultados:/resultados" \
   -e TARGET="$TARGET" -e BASE_URL="${BASE_URL:-$DEFAULT_URL}" \
   -e VUS="${VUS:-20}" -e DURACION="${DURACION:-2m}" \
+  -e RAMPA="${RAMPA:-20s}" -e BAJADA="${BAJADA:-10s}" \
   -e EMAIL="${EMAIL:-admin@colcatrufis.local}" -e PASSWORD="${PASSWORD:-admin12345}" \
   -e SIN_RADIOTAXIS="${SIN_RADIOTAXIS:-}" \
   grafana/k6:0.54.0 run /scripts/escenarios.js

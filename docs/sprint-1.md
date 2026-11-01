@@ -4,6 +4,12 @@
 hacia los 3 servicios. La API de Ubicación sirve rutas reales en GeoJSON desde PostGIS, dibujadas en
 un mapa vectorial en Flutter. Queda medido el rendimiento actual del monolito como línea base.
 
+## Verificación del 27/10/2026
+
+El estado técnico actualizado, resultados y pendientes externos están en
+[QA del sprint 1](qa-sprint-1.md). El avance implementado se detalla en [Sprint 2](sprint-2.md).
+Los estados originales de abajo describen el plan; no sustituyen esa evidencia de ejecución.
+
 ## Acuerdos del día 1–2
 
 | Acuerdo | Dónde quedó |
@@ -59,16 +65,16 @@ un mapa vectorial en Flutter. Queda medido el rendimiento actual del monolito co
 - [x] Scripts k6 (`perf/`) para login, rutas y radio taxis; el mismo escenario sirve para el Sprint 2
 - [x] Panel `admin-web/` con login JWT del Gateway (solo `admin`/`encargado`) y mapa MapLibre GL JS
 - [ ] **Correr la línea base** contra el monolito con datos reales y llenar `perf/README.md`
-- [ ] Ejecutar la checklist manual (abajo)
+- [x] Ejecutar las comprobaciones locales automatizables de la checklist; ver [evidencias y pendientes externos](qa-sprint-1.md)
 
 ## Checklist de pruebas manuales
 
-- [ ] `docker compose up -d --build` desde un clon limpio; anotar el tiempo
-- [ ] `./scripts/smoke-test.sh` todo en verde
-- [ ] Swagger UI (:8090) muestra las 3 APIs y "Try it out" funciona con un token
-- [ ] Panel (:8081): login admin → mapa con 4 rutas y paradas; clic en ruta/parada muestra datos
-- [ ] Panel: un usuario `usuario` (demo) **no** entra al panel
-- [ ] Panel: desmarcar una ruta la oculta; "Mostrar paradas" alterna la capa
+- [x] Copia limpia de fuentes y BDs nuevas: 97.99 s con caché Docker; clon remoto/descarga fría aún pendientes
+- [x] `scripts/smoke-test.ps1 -Sprint2`: 40 comprobaciones correctas (versión Windows); sintaxis shell original validada
+- [x] Swagger UI (:8090) muestra las 3 APIs y "Try it out" funciona con un token (Chrome)
+- [x] Panel (:8081): login admin → mapa con 4 rutas y paradas; clic en ruta/parada muestra datos (Chrome)
+- [x] Panel: un usuario `usuario` (demo) **no** entra al panel (Chrome)
+- [x] Panel: desmarcar una ruta la oculta; "Mostrar paradas" alterna la capa (Chrome)
 - [ ] Respuesta de `/api/ubicacion/rutas` pegada en geojson.io: trazados sobre las calles correctas
 - [ ] Flutter (Android físico): login → mapa con rutas → tocar ruta → número y sindicato
 - [ ] Flutter: "Continuar sin iniciar sesión" abre la app clásica y todo sigue funcionando

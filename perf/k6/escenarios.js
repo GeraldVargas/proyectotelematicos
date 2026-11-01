@@ -7,7 +7,7 @@
 // Ver perf/README.md para las condiciones de la prueba.
 import http from 'k6/http';
 import { check, group, fail } from 'k6';
-import { Trend } from 'k6/metrics';
+import { Trend, Counter } from 'k6/metrics';
 
 const TARGET = __ENV.TARGET || 'monolito';
 const BASE_URL = (__ENV.BASE_URL || 'http://host.docker.internal:8000').replace(/\/$/, '');
@@ -15,6 +15,7 @@ const EMAIL = __ENV.EMAIL || 'admin@colcatrufis.local';
 const PASSWORD = __ENV.PASSWORD || 'admin12345';
 const VUS = Number(__ENV.VUS || 20);
 const DURACION = __ENV.DURACION || '2m';
+const muestras = Object.fromEntries(['login', 'rutas', 'radiotaxis'].map((name) => [name, new Counter(`muestras_${name}`)]));
 
 const latencia = {
   login: new Trend('latencia_login', true),
@@ -35,9 +36,9 @@ const escenario = (exec, vus) => ({
   exec,
   startVUs: 0,
   stages: [
-    { duration: '20s', target: vus }, // rampa
+    { duration: __ENV.RAMPA || '20s', target: vus }, // rampa
     { duration: DURACION, target: vus }, // carga sostenida (lo que se reporta)
-    { duration: '10s', target: 0 },
+    { duration: __ENV.BAJADA || '10s', target: 0 },
   ],
   gracefulRampDown: '5s',
 });
@@ -59,6 +60,7 @@ export const options = {
     // RNF5: consultas de rutas < 2 s
     'latencia_rutas': ['p(95)<2000'],
     'http_req_failed': ['rate<0.01'],
+    'checks': ['rate>0.99'],
   },
 };
 
@@ -79,11 +81,13 @@ function loginGateway() {
     tags: { name: 'login' },
   });
   latencia.login.add(res.timings.duration);
+  muestras.login.add(1);
   check(res, { 'login 200': (r) => r.status === 200 });
   return res.status === 200 ? res.json('access_token') : null;
 }
 
 function loginMonolito() {
+  const inicio = Date.now();
   // Panel Blade: formulario con token CSRF + cookie de sesión
   const jar = http.cookieJar();
   jar.clear(BASE_URL);
@@ -93,7 +97,8 @@ function loginMonolito() {
     redirects: 0,
     tags: { name: 'login' },
   });
-  latencia.login.add(res.timings.duration);
+  latencia.login.add(Date.now() - inicio);
+  muestras.login.add(1);
   check(res, {
     'login redirige al dashboard': (r) => r.status === 302 && String(r.headers.Location).includes('/admin/dashboard'),
   });
@@ -107,6 +112,7 @@ export function rutas() {
   group('rutas', () => {
     const res = http.get(`${BASE_URL}${RUTAS.rutas}`, { headers: cabeceras(), tags: { name: 'rutas' } });
     latencia.rutas.add(res.timings.duration);
+    muestras.rutas.add(1);
     check(res, {
       'rutas 200': (r) => r.status === 200,
       'rutas es FeatureCollection': (r) => r.status === 200 && r.json('type') === 'FeatureCollection',
@@ -118,6 +124,7 @@ export function radiotaxis() {
   group('radiotaxis', () => {
     const res = http.get(`${BASE_URL}${RUTAS.radiotaxis}`, { headers: cabeceras(), tags: { name: 'radiotaxis' } });
     latencia.radiotaxis.add(res.timings.duration);
+    muestras.radiotaxis.add(1);
     check(res, { 'radiotaxis 200': (r) => r.status === 200 });
   });
 }
@@ -128,11 +135,15 @@ export function handleSummary(data) {
   const m = data.metrics;
   const fila = (nombre) => {
     const v = m[`latencia_${nombre}`]?.values;
-    return v ? `| ${nombre} | ${v.med.toFixed(0)} | ${v['p(95)'].toFixed(0)} | ${v.count ?? '-'} |` : `| ${nombre} | - | - | - |`;
+    const count = m['muestras_' + nombre]?.values.count ?? 0;
+    return v ? `| ${nombre} | ${v.med.toFixed(0)} | ${v['p(95)'].toFixed(0)} | ${count} |` : `| ${nombre} | - | - | - |`;
   };
   const resumen = [
     `# ${TARGET} — ${new Date().toISOString()}`,
     `BASE_URL=${BASE_URL} VUS=${VUS} DURACION=${DURACION}`,
+    `RAMPA=${__ENV.RAMPA || '20s'} BAJADA=${__ENV.BAJADA || '10s'} SIN_RADIOTAXIS=${!!__ENV.SIN_RADIOTAXIS}`,
+    `VUs efectivos: login=${escenarios.login.stages[0].target}, rutas=${escenarios.rutas.stages[0].target}, radiotaxis=${escenarios.radiotaxis?.stages[0].target || 0}`,
+    'Esta corrida solo es comparable con otra que use los mismos datos, hardware, alcance y perfil de carga.',
     '',
     '| Endpoint | p50 (ms) | p95 (ms) | muestras |',
     '|---|---|---|---|',

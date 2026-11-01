@@ -1,0 +1,553 @@
+ Image colcatrufis-verify-1793135895150-api-ubicacion Building 
+ Image colcatrufis-verify-1793135895150-worker-notificaciones Building 
+ Image colcatrufis-verify-1793135895150-worker-eventos-ubicacion Building 
+ Image colcatrufis-verify-1793135895150-api-usuarios Building 
+ Image colcatrufis-verify-1793135895150-api-notificaciones Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 3.45kB 0.1s done
+#1 DONE 0.1s
+
+#2 [api-notificaciones internal] load build definition from Dockerfile
+#2 transferring dockerfile: 30B 0.0s
+#2 ...
+
+#3 [api-usuarios internal] load build definition from Dockerfile
+#3 transferring dockerfile: 794B 0.1s done
+#3 DONE 0.2s
+
+#2 [worker-notificaciones internal] load build definition from Dockerfile
+#2 transferring dockerfile: 794B 0.1s done
+#2 DONE 0.2s
+
+#4 [api-ubicacion internal] load build definition from Dockerfile
+#4 transferring dockerfile: 794B 0.1s done
+#4 DONE 0.3s
+
+#5 [worker-notificaciones internal] load metadata for docker.io/library/composer:2.8.12
+#5 DONE 2.0s
+
+#6 [worker-notificaciones internal] load metadata for docker.io/library/php:8.3.13-cli-alpine3.20
+#6 DONE 2.0s
+
+#7 [worker-eventos-ubicacion internal] load .dockerignore
+#7 transferring context: 163B 0.0s done
+#7 DONE 0.0s
+
+#8 [worker-notificaciones internal] load .dockerignore
+#8 transferring context: 163B 0.0s done
+#8 DONE 0.1s
+
+#9 [api-usuarios internal] load .dockerignore
+#9 transferring context: 163B 0.0s done
+#9 DONE 0.1s
+
+#10 [api-ubicacion stage-1 1/8] FROM docker.io/library/php:8.3.13-cli-alpine3.20@sha256:0593a69baf3e1d9adbc79077bdd0821718fab98dfc47d2f007c6e5495f89f76f
+#10 resolve docker.io/library/php:8.3.13-cli-alpine3.20@sha256:0593a69baf3e1d9adbc79077bdd0821718fab98dfc47d2f007c6e5495f89f76f 0.1s done
+#10 DONE 0.1s
+
+#11 [api-ubicacion composer 1/1] FROM docker.io/library/composer:2.8.12@sha256:5248900ab8b5f7f880c2d62180e40960cd87f60149ec9a1abfd62ac72a02577c
+#11 resolve docker.io/library/composer:2.8.12@sha256:5248900ab8b5f7f880c2d62180e40960cd87f60149ec9a1abfd62ac72a02577c 0.1s done
+#11 DONE 0.1s
+
+#12 [worker-eventos-ubicacion internal] load build context
+#12 transferring context: 4.57kB 0.1s done
+#12 DONE 0.1s
+
+#13 [worker-notificaciones internal] load build context
+#13 transferring context: 3.77kB 0.1s done
+#13 DONE 0.2s
+
+#14 [api-ubicacion stage-1 5/8] COPY composer.json composer.lock ./
+#14 CACHED
+
+#15 [worker-notificaciones stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#15 CACHED
+
+#16 [worker-notificaciones stage-1 2/8] RUN apk add --no-cache libpq-dev mysql-client postgresql-client     && docker-php-ext-install pdo_mysql pdo_pgsql pcntl
+#16 CACHED
+
+#17 [worker-notificaciones stage-1 4/8] WORKDIR /app
+#17 CACHED
+
+#18 [worker-notificaciones stage-1 5/8] COPY composer.json composer.lock ./
+#18 CACHED
+
+#19 [worker-notificaciones stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#19 CACHED
+
+#20 [worker-notificaciones stage-1 3/8] COPY --from=composer /usr/bin/composer /usr/bin/composer
+#20 CACHED
+
+#21 [api-usuarios internal] load build context
+#21 transferring context: 4.99kB 0.2s done
+#21 DONE 0.2s
+
+#22 [worker-notificaciones stage-1 7/8] COPY . .
+#22 ...
+
+#20 [api-usuarios stage-1 3/8] COPY --from=composer /usr/bin/composer /usr/bin/composer
+#20 CACHED
+
+#16 [api-usuarios stage-1 2/8] RUN apk add --no-cache libpq-dev mysql-client postgresql-client     && docker-php-ext-install pdo_mysql pdo_pgsql pcntl
+#16 CACHED
+
+#17 [api-usuarios stage-1 4/8] WORKDIR /app
+#17 CACHED
+
+#23 [api-usuarios stage-1 5/8] COPY composer.json composer.lock ./
+#23 CACHED
+
+#24 [api-usuarios stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#24 CACHED
+
+#22 [worker-notificaciones stage-1 7/8] COPY . .
+#22 DONE 0.3s
+
+#25 [api-usuarios stage-1 7/8] COPY . .
+#25 DONE 0.3s
+
+#26 [worker-eventos-ubicacion stage-1 7/8] COPY . .
+#26 DONE 0.4s
+
+#27 [api-ubicacion stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#27 4.324 Generating optimized autoload files
+#27 ...
+
+#28 [worker-notificaciones stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#28 4.157 Generating optimized autoload files
+#28 ...
+
+#29 [api-usuarios stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#29 4.227 Generating optimized autoload files
+#29 ...
+
+#27 [api-ubicacion stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#27 18.93 > Illuminate\Foundation\ComposerScripts::postAutoloadDump
+#27 19.02 > @php artisan package:discover --ansi
+#27 21.12 
+#27 21.12   [37;44m INFO [39;49m Discovering packages.  
+#27 21.12 
+#27 21.21   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 21.21   laravel/sail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 21.21   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 21.22   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 21.22   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 21.22   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 21.22 
+#27 21.27 Generated optimized autoload files containing 6994 classes
+#27 ...
+
+#28 [api-notificaciones stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#28 19.18 > Illuminate\Foundation\ComposerScripts::postAutoloadDump
+#28 19.23 > @php artisan package:discover --ansi
+#28 20.35 
+#28 20.35   [37;44m INFO [39;49m Discovering packages.  
+#28 20.35 
+#28 20.38   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 20.38   laravel/sail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 20.38   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 20.38   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 20.38   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 20.38   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 20.38 
+#28 20.45 Generated optimized autoload files containing 6986 classes
+#28 21.81 
+#28 21.81   [37;44m INFO [39;49m Discovering packages.  
+#28 21.81 
+#28 21.82   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 21.82   laravel/sail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 21.83   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 21.83   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 21.83   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 21.83   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#28 21.84 
+#28 DONE 22.3s
+
+#27 [api-ubicacion stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#27 22.37 
+#27 22.37   [37;44m INFO [39;49m Discovering packages.  
+#27 22.37 
+#27 22.38   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 22.38   laravel/sail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 22.39   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 22.39   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 22.39   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 22.39   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#27 22.39 
+#27 DONE 22.7s
+
+#30 [api-ubicacion] exporting to image
+#30 exporting layers
+#30 ...
+
+#29 [api-usuarios stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#29 19.56 > Illuminate\Foundation\ComposerScripts::postAutoloadDump
+#29 19.60 > @php artisan package:discover --ansi
+#29 21.01 
+#29 21.01   [37;44m INFO [39;49m Discovering packages.  
+#29 21.01 
+#29 21.12   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 21.12   laravel/sail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 21.12   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 21.13   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 21.13   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 21.13   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 21.13 
+#29 21.18 Generated optimized autoload files containing 6447 classes
+#29 22.92 
+#29 22.92   [37;44m INFO [39;49m Discovering packages.  
+#29 22.92 
+#29 23.00   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 23.00   laravel/sail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 23.01   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 23.01   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 23.01   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 23.01   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+#29 23.01 
+#29 DONE 23.2s
+
+#31 [api-usuarios] exporting to image
+#31 exporting layers 0.6s done
+#31 exporting manifest sha256:6daf0ccaa59b989bde6a8b2c7776016595d87a939f90829c65d66d6eb15848de
+#31 exporting manifest sha256:6daf0ccaa59b989bde6a8b2c7776016595d87a939f90829c65d66d6eb15848de 0.1s done
+#31 exporting config sha256:ac33c769cd0dce3e24601918af56ff11294067510173b5069cfb10ae87f96ad4
+#31 exporting config sha256:ac33c769cd0dce3e24601918af56ff11294067510173b5069cfb10ae87f96ad4 0.1s done
+#31 exporting attestation manifest sha256:647c3be70008bb655ebb33f4b4347f22b848a1332157f5899e697f141361dbf8
+#31 exporting attestation manifest sha256:647c3be70008bb655ebb33f4b4347f22b848a1332157f5899e697f141361dbf8 0.1s done
+#31 exporting manifest list sha256:bb1e6a6cec311047e26039cd15bc7030728254a8c30b5789d80f3065677a7e91 0.0s done
+#31 naming to docker.io/library/colcatrufis-verify-1793135895150-api-usuarios:latest done
+#31 unpacking to docker.io/library/colcatrufis-verify-1793135895150-api-usuarios:latest
+#31 ...
+
+#32 [worker-notificaciones] exporting to image
+#32 exporting layers 0.8s done
+#32 exporting manifest sha256:9ef01a121766ad556601a6b920822ddd78357c24e744b4f6cff067b9ec552098 0.1s done
+#32 exporting config sha256:d27eda1747211d6533f1ee7f05dbaa7a66a02c17b31e2e92b3fd0c5afa460adc 0.1s done
+#32 exporting attestation manifest sha256:0e2f8ffcffa4eaabd49eecef926b02000b3747811f779c156bcf046eda6c5b69 0.1s done
+#32 exporting manifest list sha256:32253c96f040bb0728dee0df57b284a5aea56ba46df596041864ee42e39b66ef 0.1s done
+#32 naming to docker.io/library/colcatrufis-verify-1793135895150-worker-notificaciones:latest 0.1s done
+#32 unpacking to docker.io/library/colcatrufis-verify-1793135895150-worker-notificaciones:latest 0.3s done
+#32 DONE 1.8s
+
+#31 [api-usuarios] exporting to image
+#31 unpacking to docker.io/library/colcatrufis-verify-1793135895150-api-usuarios:latest 0.2s done
+#31 DONE 1.2s
+
+#33 [api-notificaciones] exporting to image
+#33 exporting layers 0.8s done
+#33 exporting manifest sha256:2fc25f446374897fa7697e7eeab8bd53950564c1d4b56895bf158772552eda63 0.1s done
+#33 exporting config sha256:0cd4d19b1acfdcbf04facaf360981d7f07c955ef75eb61053fd7caab149a7bb9 0.1s done
+#33 exporting attestation manifest sha256:53fb54ea36c83aaa5559c20ea6306fa762a94f7c55662ecc02602b851d2e9f75 0.1s done
+#33 exporting manifest list sha256:cea4711692b2945b6979aa4f211f5215916e960e2d36848a1bca62e8dc8c3877 0.1s done
+#33 naming to docker.io/library/colcatrufis-verify-1793135895150-api-notificaciones:latest 0.1s done
+#33 unpacking to docker.io/library/colcatrufis-verify-1793135895150-api-notificaciones:latest 0.3s done
+#33 DONE 1.8s
+
+#34 [worker-eventos-ubicacion] exporting to image
+#34 exporting layers 0.8s done
+#34 exporting manifest sha256:898a86552e6a1ecb7e0bb1b0855cb62391bd9a73321af199bf4d42da4ffd286f 0.1s done
+#34 exporting config sha256:26d177615bc87542ffe55a551d2b81afcb0fbb6161d6004cda2df832333b3501 0.1s done
+#34 exporting attestation manifest sha256:cffa39689298431275892aa24120a9f25212becf3e075d6364db57b2de1571b0 0.1s done
+#34 exporting manifest list sha256:78cd70f71137ad114555656c9fc613dd8e413cffff724a5f71cd22fe16bb99c5 0.1s done
+#34 naming to docker.io/library/colcatrufis-verify-1793135895150-worker-eventos-ubicacion:latest 0.0s done
+#34 unpacking to docker.io/library/colcatrufis-verify-1793135895150-worker-eventos-ubicacion:latest 0.4s done
+#34 DONE 1.8s
+
+#30 [api-ubicacion] exporting to image
+#30 exporting layers 0.8s done
+#30 exporting manifest sha256:2b206b69428f4c591b0651ee7976b7ec5bc08ab6aabc4906361af2610aa27a41 0.1s done
+#30 exporting config sha256:5f352d08109a2ed7da224264a76f6bcedb0bcf8a1cd38c3157196c7e1280721d 0.1s done
+#30 exporting attestation manifest sha256:5a44ee3c386948006810eff907b67b379a55a14df682b745c697ea52b7eb97bc 0.1s done
+#30 exporting manifest list sha256:304cc40ae790d39f106488973fd099a6fcf5c249a839f377491947eac52fc93e 0.1s done
+#30 naming to docker.io/library/colcatrufis-verify-1793135895150-api-ubicacion:latest 0.0s done
+#30 unpacking to docker.io/library/colcatrufis-verify-1793135895150-api-ubicacion:latest 0.4s done
+#30 DONE 1.8s
+
+#35 [worker-notificaciones] resolving provenance for metadata file
+#35 ...
+
+#36 [api-notificaciones] resolving provenance for metadata file
+#36 DONE 0.2s
+
+#37 [api-ubicacion] resolving provenance for metadata file
+#37 DONE 0.4s
+
+#35 [worker-notificaciones] resolving provenance for metadata file
+#35 DONE 0.7s
+
+#38 [api-usuarios] resolving provenance for metadata file
+#38 DONE 0.6s
+
+#39 [worker-eventos-ubicacion] resolving provenance for metadata file
+#39 DONE 0.6s
+ Image colcatrufis-verify-1793135895150-api-ubicacion Built 
+ Image colcatrufis-verify-1793135895150-worker-eventos-ubicacion Built 
+ Image colcatrufis-verify-1793135895150-api-usuarios Built 
+ Image colcatrufis-verify-1793135895150-api-notificaciones Built 
+ Image colcatrufis-verify-1793135895150-worker-notificaciones Built 
+ Network colcatrufis-verify-1793135895150_default Creating 
+ Volume colcatrufis-verify-1793135895150_db-notificaciones Creating 
+ Volume colcatrufis-verify-1793135895150_db-ubicacion Creating 
+ Volume colcatrufis-verify-1793135895150_db-usuarios Creating 
+ Volume colcatrufis-verify-1793135895150_db-usuarios Creating 
+ Volume colcatrufis-verify-1793135895150_db-ubicacion Creating 
+ Network colcatrufis-verify-1793135895150_default Creating 
+ Volume colcatrufis-verify-1793135895150_db-notificaciones Creating 
+ Volume colcatrufis-verify-1793135895150_jwt-keys Creating 
+ Volume colcatrufis-verify-1793135895150_jwt-keys Creating 
+ Volume colcatrufis-verify-1793135895150_db-ubicacion Created 
+ Volume colcatrufis-verify-1793135895150_db-ubicacion Created 
+ Volume colcatrufis-verify-1793135895150_db-usuarios Created 
+ Volume colcatrufis-verify-1793135895150_db-usuarios Created 
+ Volume colcatrufis-verify-1793135895150_jwt-keys Created 
+ Volume colcatrufis-verify-1793135895150_jwt-keys Created 
+ Volume colcatrufis-verify-1793135895150_db-notificaciones Created 
+ Volume colcatrufis-verify-1793135895150_db-notificaciones Created 
+ Network colcatrufis-verify-1793135895150_default Created 
+ Network colcatrufis-verify-1793135895150_default Created 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Creating 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Creating 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Creating 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Creating 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Creating 
+ Container colcatrufis-verify-1793135895150-redis-1 Creating 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Created 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Created 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Created 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Created 
+ Container colcatrufis-verify-1793135895150-redis-1 Created 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Creating 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Creating 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Created 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Creating 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Created 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Creating 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Created 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Creating 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Created 
+ Container colcatrufis-verify-1793135895150-gateway-1 Creating 
+ Container colcatrufis-verify-1793135895150-gateway-1 Created 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Created 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Created 
+ Container colcatrufis-verify-1793135895150-redis-1 Starting 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Starting 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Starting 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Starting 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Starting 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Starting 
+ Container colcatrufis-verify-1793135895150-redis-1 Started 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Started 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Waiting 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Started 
+ Container colcatrufis-verify-1793135895150-redis-1 Waiting 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Waiting 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Started 
+ Container colcatrufis-verify-1793135895150-redis-1 Waiting 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Waiting 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Started 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Started 
+ Container colcatrufis-verify-1793135895150-redis-1 Healthy 
+ Container colcatrufis-verify-1793135895150-redis-1 Healthy 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Healthy 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Starting 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Started 
+ Container colcatrufis-verify-1793135895150-redis-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Waiting 
+ Container colcatrufis-verify-1793135895150-redis-1 Healthy 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Healthy 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Starting 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Started 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Healthy 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Starting 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Started 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Healthy 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Starting 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Started 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Healthy 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Starting 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Started 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Healthy 
+ Container colcatrufis-verify-1793135895150-gateway-1 Starting 
+ Container colcatrufis-verify-1793135895150-gateway-1 Started 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Waiting 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Waiting 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Waiting 
+ Container colcatrufis-verify-1793135895150-gateway-1 Waiting 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Waiting 
+ Container colcatrufis-verify-1793135895150-redis-1 Waiting 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Waiting 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Waiting 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Waiting 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Healthy 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Healthy 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Healthy 
+ Container colcatrufis-verify-1793135895150-gateway-1 Healthy 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Healthy 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Healthy 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Healthy 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Healthy 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Healthy 
+ Container colcatrufis-verify-1793135895150-redis-1 Healthy 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Healthy 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Healthy 
+{"driver":"mysql","users":2,"demo":true,"password_ok":true}
+   PASS  Tests\Feature\NotificacionesTest
+  ✓ sin header del gateway devuelve 401                                  1.87s  
+  ✓ lista solo las notificaciones del usuario del jwt                    0.20s  
+  ✓ suscribirse a una linea                                              0.15s  
+  ✓ evento ruta actualizada notifica a los suscriptores una sola vez     0.12s  
+  ✓ evento incompleto es rechazado                                       0.02s  
+
+  Tests:    5 passed (16 assertions)
+  Duration: 2.75s
+
+
+   PASS  Tests\Feature\AuthTest
+  ✓ login correcto devuelve jwt rs256 con claims acordados               2.50s  
+  ✓ login fallido devuelve 401                                           0.02s  
+  ✓ login de usuario desactivado devuelve 403                            0.02s  
+  ✓ token expirado es rechazado                                          0.04s  
+  ✓ perfil con token valido                                              0.04s  
+  ✓ perfil sin token devuelve 401                                        0.02s  
+  ✓ registro crea usuario con rol usuario                                0.06s  
+  ✓ refresh rota el token y no se puede reutilizar                       0.05s  
+  ✓ refresh expirado devuelve 401                                        0.03s  
+
+   PASS  Tests\Feature\MigrarUsuariosMonolitoTest
+  ✓ usuario del monolito puede iniciar sesion tras migrar                0.04s  
+  ✓ dry run no escribe                                                   0.02s  
+
+  Tests:    11 passed (37 assertions)
+  Duration: 3.31s
+
+
+   PASS  Tests\Feature\EdicionRutaTest
+  ✓ admin actualiza geometria y persiste evento en la misma transaccion  3.31s  
+  ✓ usuario y encargado no pueden editar                                 0.04s  
+  ✓ sin identidad del gateway no se permite editar                       0.04s  
+  ✓ geometrias invalidas no modifican la ruta ni generan eventos         0.14s  
+  ✓ ruta inexistente y descripcion vacia                                 0.06s  
+  ✓ reiniciar el seeder conserva las ediciones                           0.08s  
+  ✓ fallo al crear el evento revierte la edicion                         0.22s  
+  ✓ despachador reintenta sin perder el uuid y no reenvia publicados     0.12s  
+
+   PASS  Tests\Feature\ParadasCercanasTest
+  ✓ busqueda en metros filtra y ordena por distancia                     0.35s  
+  ✓ cercania vacia y limite de resultados                                0.07s  
+  ✓ parametros invalidos devuelven 422                                   0.05s  
+
+   PASS  Tests\Feature\RutasGeoJsonTest
+  ✓ rutas devuelve feature collection valida                             0.06s  
+  ✓ filtro por linea                                                     0.05s  
+  ✓ ruta por id incluye paradas ordenadas                                0.05s  
+  ✓ ruta inexistente devuelve 404                                        0.03s  
+  ✓ paradas son puntos lng lat                                           0.04s  
+  ✓ paradas filtradas por ruta                                           0.03s  
+
+  Tests:    17 passed (3228 assertions)
+  Duration: 5.26s
+
+{"driver":"mysql","users":2,"demo":true,"password_ok":true}OK: Panel disponible
+OK: Swagger disponible
+OK: Swagger publica usuarios.yaml
+OK: Swagger publica ubicacion.yaml
+OK: Swagger publica notificaciones.yaml
+OK: Preflight del login
+OK: Preflight: CORS sin cabeceras duplicadas
+OK: /api/ubicacion/rutas sin token devuelve 401
+OK: /api/usuarios/perfil sin token devuelve 401
+OK: /api/notificaciones sin token devuelve 401
+OK: JWT falso rechazado
+OK: Clave incorrecta rechazada
+OK: Login demo
+OK: Login: CORS sin cabeceras duplicadas
+OK: Login emite JWT
+OK: /api/usuarios/perfil con JWT devuelve 200
+OK: /api/usuarios/perfil: CORS sin cabeceras duplicadas
+OK: /api/ubicacion/rutas con JWT devuelve 200
+OK: /api/ubicacion/rutas: CORS sin cabeceras duplicadas
+OK: /api/ubicacion/paradas con JWT devuelve 200
+OK: /api/ubicacion/paradas: CORS sin cabeceras duplicadas
+OK: /api/notificaciones con JWT devuelve 200
+OK: /api/notificaciones: CORS sin cabeceras duplicadas
+OK: Perfil y rol del usuario demo
+OK: GeoJSON con al menos 3 rutas
+OK: Gateway conserva el filtro de linea
+OK: Detalle de ruta
+OK: Paradas filtradas por ruta
+OK: Gateway rechaza JWT firmado y expirado
+OK: Refresh de sesion
+OK: Refresh token anterior no puede reutilizarse
+OK: Suscripcion a linea 252
+OK: Evento Ubicacion -> Redis -> Notificaciones
+OK: Paradas cercanas por el Gateway
+OK: Primera parada cercana a menos de un metro
+OK: Usuario no puede editar ni falsificar el rol con headers
+OK: Administrador puede guardar un trazado
+OK: Edicion de ruta: CORS sin cabeceras duplicadas
+OK: Edicion devuelve el UUID del evento persistido
+OK: Edicion -> evento persistido -> Redis -> notificacion del suscriptor
+Resultado: 40 comprobaciones correctas.
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Stopping 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Stopping 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Stopping 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Stopping 
+ Container colcatrufis-verify-1793135895150-gateway-1 Stopping 
+ Container colcatrufis-verify-1793135895150-gateway-1 Stopped 
+ Container colcatrufis-verify-1793135895150-gateway-1 Removing 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Stopped 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Removing 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Stopped 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Removing 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Stopped 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Removing 
+ Container colcatrufis-verify-1793135895150-admin-web-1 Removed 
+ Container colcatrufis-verify-1793135895150-gateway-1 Removed 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Stopping 
+ Container colcatrufis-verify-1793135895150-swagger-ui-1 Removed 
+ Container colcatrufis-verify-1793135895150-worker-eventos-ubicacion-1 Removed 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Stopping 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Stopped 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Removing 
+ Container colcatrufis-verify-1793135895150-api-usuarios-1 Removed 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Stopping 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Stopped 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Removing 
+ Container colcatrufis-verify-1793135895150-api-ubicacion-1 Removed 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Stopping 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Stopped 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Removing 
+ Container colcatrufis-verify-1793135895150-db-ubicacion-1 Removed 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Stopped 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Removing 
+ Container colcatrufis-verify-1793135895150-worker-notificaciones-1 Removed 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Stopping 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Stopped 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Removing 
+ Container colcatrufis-verify-1793135895150-api-notificaciones-1 Removed 
+ Container colcatrufis-verify-1793135895150-redis-1 Stopping 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Stopping 
+ Container colcatrufis-verify-1793135895150-redis-1 Stopped 
+ Container colcatrufis-verify-1793135895150-redis-1 Removing 
+ Container colcatrufis-verify-1793135895150-redis-1 Removed 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Stopped 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Removing 
+ Container colcatrufis-verify-1793135895150-db-usuarios-1 Removed 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Stopped 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Removing 
+ Container colcatrufis-verify-1793135895150-db-notificaciones-1 Removed 
+ Volume colcatrufis-verify-1793135895150_db-notificaciones Removing 
+ Volume colcatrufis-verify-1793135895150_db-usuarios Removing 
+ Volume colcatrufis-verify-1793135895150_jwt-keys Removing 
+ Volume colcatrufis-verify-1793135895150_db-ubicacion Removing 
+ Network colcatrufis-verify-1793135895150_default Removing 
+ Volume colcatrufis-verify-1793135895150_db-usuarios Removed 
+ Volume colcatrufis-verify-1793135895150_db-notificaciones Removed 
+ Volume colcatrufis-verify-1793135895150_jwt-keys Removed 
+ Volume colcatrufis-verify-1793135895150_db-ubicacion Removed 
+ Network colcatrufis-verify-1793135895150_default Removed 

@@ -36,6 +36,32 @@
       <h2>Rutas <span id="rutas-total" class="contador"></span></h2>
       <ul id="lista-rutas" class="rutas"></ul>
       <label class="check"><input type="checkbox" id="toggle-paradas" checked> Mostrar paradas</label>
+      <section id="editor-ruta" hidden aria-labelledby="editor-titulo">
+        <h2 id="editor-titulo">Editar línea <span id="editor-linea"></span></h2>
+        <p class="ayuda">Arrastra los puntos del recorrido. Selecciona un punto para quitarlo.</p>
+        <div class="herramientas">
+          <button id="editor-agregar" type="button" class="secundario" aria-pressed="false">Añadir puntos al final</button>
+          <button id="editor-quitar" type="button" class="secundario" disabled>Quitar punto</button>
+          <button id="editor-restablecer" type="button" class="secundario">Restablecer trazado</button>
+        </div>
+        <form id="form-ruta" class="form-ruta">
+          <label>Nombre<input name="nombre" required maxlength="255"></label>
+          <label>Estado<select name="estado"><option value="activa">Activa</option><option value="suspendida">Suspendida</option></select></label>
+          <label>Color<input name="color" type="color"></label>
+          <label>Motivo del cambio<textarea name="descripcion" required minlength="5" maxlength="500" placeholder="Describe el cambio para los usuarios suscritos"></textarea></label>
+          <p id="editor-error" class="error" role="alert" hidden></p>
+          <div class="herramientas">
+            <button id="editor-guardar" type="submit">Guardar cambio</button>
+            <button id="editor-cancelar" type="button" class="secundario">Cancelar</button>
+          </div>
+        </form>
+      </section>
+      <section aria-labelledby="cercanas-titulo">
+        <h2 id="cercanas-titulo">Paradas cercanas</h2>
+        <button id="btn-cercanas" type="button" class="secundario" aria-pressed="false">Elegir ubicación en el mapa</button>
+        <p class="ayuda">Busca paradas a menos de 300 metros del punto que selecciones.</p>
+        <ul id="lista-cercanas" class="cercanas" aria-live="polite"></ul>
+      </section>
       <p id="estado" class="estado" role="status"></p>
       <footer class="atribucion">Rutas: © colaboradores de OpenStreetMap (ODbL)</footer>
     </aside>

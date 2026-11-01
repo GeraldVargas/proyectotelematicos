@@ -13,6 +13,8 @@ x-laravel-env: &laravel-env
   REDIS_CLIENT: predis
   REDIS_HOST: redis
   REDIS_PORT: "6379"
+  # La cola de eventos es compartida: no anteponer el APP_NAME de cada API.
+  REDIS_PREFIX: ""
   # Clave solo para desarrollo local; en producción cada servicio usa la suya
   APP_KEY: base64:Q29sY2FUcnVmaXMtc29sby1wYXJhLWRlc2Fycm9sbG8=
 
@@ -88,7 +90,7 @@ services:
   # ---------- API de Ubicación ----------
   api-ubicacion:
     build: ./services/api-ubicacion
-    environment:
+    environment: &ubicacion-env
       <<: *laravel-env
       APP_NAME: api-ubicacion
       DB_CONNECTION: pgsql
@@ -107,6 +109,19 @@ services:
     healthcheck: *healthcheck-laravel
     depends_on:
       db-ubicacion:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker-eventos-ubicacion:
+    build: ./services/api-ubicacion
+    command: ["php", "artisan", "eventos:despachar"]
+    environment:
+      <<: *ubicacion-env
+      RUN_MIGRATIONS: "false"
+    restart: unless-stopped
+    depends_on:
+      api-ubicacion:
         condition: service_healthy
       redis:
         condition: service_healthy

@@ -1,0 +1,516 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.2805659,
+          -17.3943334
+        ]
+      },
+      "properties": {
+        "id": 1,
+        "nombre": "Plaza Bolívar",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          },
+          {
+            "id": 4,
+            "linea": "290",
+            "color": "#1E88E5"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1952478,
+          -17.392992
+        ]
+      },
+      "properties": {
+        "id": 2,
+        "nombre": "Avenida Segunda",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1915959,
+          -17.3931478
+        ]
+      },
+      "properties": {
+        "id": 3,
+        "nombre": "Andrés Manuel del Rio",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1879948,
+          -17.3933192
+        ]
+      },
+      "properties": {
+        "id": 4,
+        "nombre": "Gabriel Lippmann",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 5,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1813671,
+          -17.3935991
+        ]
+      },
+      "properties": {
+        "id": 5,
+        "nombre": "Viaducto Melchor Pérez de Olguín",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 6,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1772427,
+          -17.3937825
+        ]
+      },
+      "properties": {
+        "id": 6,
+        "nombre": "Pedro Sarmiento de Gamboa",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 7,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1745966,
+          -17.3938969
+        ]
+      },
+      "properties": {
+        "id": 7,
+        "nombre": "Automóvil Club Boliviano",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 8,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1601373,
+          -17.3980684
+        ]
+      },
+      "properties": {
+        "id": 8,
+        "nombre": "Ladislao Cabrera",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 9,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1579112,
+          -17.3995436
+        ]
+      },
+      "properties": {
+        "id": 9,
+        "nombre": "Aroma",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1488072,
+          -17.396606
+        ]
+      },
+      "properties": {
+        "id": 10,
+        "nombre": "Oquendo y Armando Méndez",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 11,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1417677,
+          -17.3999136
+        ]
+      },
+      "properties": {
+        "id": 11,
+        "nombre": "Parada 200 / 201 / 203 / 204 / 206",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 12,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1533675,
+          -17.39895
+        ]
+      },
+      "properties": {
+        "id": 12,
+        "nombre": "San Martín",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 13,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1707567,
+          -17.3946333
+        ]
+      },
+      "properties": {
+        "id": 13,
+        "nombre": "Alto de la Alianza",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 14,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1710351,
+          -17.3940655
+        ]
+      },
+      "properties": {
+        "id": 14,
+        "nombre": "Distribuidor Alejo Calatayud Espíndola 1730",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 1,
+            "linea": "201",
+            "color": "#43A047"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 15,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1409679,
+          -17.3998033
+        ]
+      },
+      "properties": {
+        "id": 15,
+        "nombre": "Parada 252",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 2,
+            "linea": "252",
+            "color": "#E53935"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 16,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1530852,
+          -17.3841083
+        ]
+      },
+      "properties": {
+        "id": 16,
+        "nombre": "Plaza Constitución",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 2,
+            "linea": "252",
+            "color": "#E53935"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 17,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1627306,
+          -17.3877861
+        ]
+      },
+      "properties": {
+        "id": 17,
+        "nombre": "Tumusla",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 2,
+            "linea": "252",
+            "color": "#E53935"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 18,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1824764,
+          -17.386799
+        ]
+      },
+      "properties": {
+        "id": 18,
+        "nombre": "Beijing y d'Orbigny",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 2,
+            "linea": "252",
+            "color": "#E53935"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 19,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1950804,
+          -17.3927015
+        ]
+      },
+      "properties": {
+        "id": 19,
+        "nombre": "Avenida Segunda",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 2,
+            "linea": "252",
+            "color": "#E53935"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 20,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1628333,
+          -17.3725944
+        ]
+      },
+      "properties": {
+        "id": 20,
+        "nombre": "América y Libertador Simón Bolívar",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 3,
+            "linea": "270",
+            "color": "#FB8C00"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 21,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1822515,
+          -17.3878387
+        ]
+      },
+      "properties": {
+        "id": 21,
+        "nombre": "Beijing y d'Orbigny",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 4,
+            "linea": "290",
+            "color": "#1E88E5"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 22,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1977469,
+          -17.3329711
+        ]
+      },
+      "properties": {
+        "id": 22,
+        "nombre": "Parada 290",
+        "descripcion": null,
+        "rutas": [
+          {
+            "id": 4,
+            "linea": "290",
+            "color": "#1E88E5"
+          }
+        ]
+      }
+    }
+  ]
+}

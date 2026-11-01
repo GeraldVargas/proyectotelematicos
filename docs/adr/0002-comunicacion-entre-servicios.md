@@ -1,6 +1,6 @@
 # ADR 0002 — Comunicación entre servicios: eventos en una cola Redis
 
-- **Estado:** aceptada
+- **Estado:** decisión técnica implementada; aprobación formal del equipo pendiente
 - **Fecha:** 2026-10-14 (Sprint 1)
 - **Responsable:** Backend — API de Notificaciones (acordado con Backend GIS)
 
@@ -51,3 +51,9 @@ formato sube `version`.
 - (−) Si el worker falla entre `BRPOP` y el guardado, el evento se pierde. Si hace falta entrega
   garantizada, migrar a Redis Streams (`XREADGROUP` + `XACK`) sin cambiar el formato del evento.
 - Fuera del Sprint 1: notificaciones push al móvil (FCM) y cola de mensajes fallidos.
+
+## Revisión del equipo
+
+La implementación y sus pruebas no equivalen a una aprobación de todos los integrantes.
+Las firmas o comentarios del equipo siguen pendientes. El registro y reintento del productor
+añadidos en el sprint 2 se describen en [ADR 0004](0004-edicion-rutas-y-eventos.md).

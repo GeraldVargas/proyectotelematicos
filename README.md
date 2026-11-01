@@ -115,6 +115,29 @@ docker compose exec api-ubicacion php artisan ubicacion:migrar-monolito
 
 ## Documentación
 
+### Verificación y avance local (27/10/2026)
+
+En Windows, desde la raíz y con Docker Desktop abierto:
+
+```powershell
+docker compose up --build
+```
+
+`Ctrl+C` apaga los servicios y conserva los datos. En otra terminal puedes comprobarlos:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/smoke-test.ps1 -Sprint2
+```
+
+El panel permite **Editar trazado** (solo admin) y buscar **Paradas cercanas**. Guardar una ruta
+registra su evento de forma persistente para su posterior publicación en Redis.
+Ver [evidencias y pendientes del sprint 1](docs/qa-sprint-1.md) y [avance del sprint 2](docs/sprint-2.md).
+El código actualizado requiere reconstruir las imágenes con `--build`; no hace falta reinstalar
+Composer en Windows. Las imágenes usan PHP 8.3.13 y los locks son compatibles con ese entorno.
+
+Pruebas en un navegador real: `node scripts/browser-qa.mjs` (Node 22+ y Chrome).
+Copia limpia, con bases de datos desechables y caché Docker existente: `node scripts/clean-verify.mjs`.
+
 - [Plan y estado del Sprint 1](docs/sprint-1.md)
 - [Decisiones de arquitectura (ADR)](docs/adr/README.md)
 - Contratos OpenAPI: [usuarios](docs/openapi/usuarios.yaml) · [ubicación](docs/openapi/ubicacion.yaml) · [notificaciones](docs/openapi/notificaciones.yaml)

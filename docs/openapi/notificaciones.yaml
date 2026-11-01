@@ -16,6 +16,7 @@ security:
 paths:
   /api/notificaciones:
     get:
+      operationId: listarNotificaciones
       summary: Notificaciones del usuario, de la más reciente a la más antigua
       parameters:
         - { name: page, in: query, schema: { type: integer, default: 1 } }
@@ -38,6 +39,7 @@ paths:
         '401': { $ref: '#/components/responses/NoAutorizado' }
   /api/notificaciones/suscripciones:
     get:
+      operationId: listarSuscripciones
       summary: Líneas a las que está suscrito el usuario
       responses:
         '200':
@@ -49,6 +51,7 @@ paths:
                 items: { $ref: '#/components/schemas/Suscripcion' }
         '401': { $ref: '#/components/responses/NoAutorizado' }
     post:
+      operationId: crearSuscripcion
       summary: Suscribirse a los avisos de una línea
       requestBody:
         required: true

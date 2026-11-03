@@ -25,6 +25,11 @@ taxis. El detalle reproducible está en [perf/README.md](../perf/README.md).
 Evidencias: [monolito](../perf/resultados/monolito-2026-11-03T00-40-18-619Z.md) y
 [microservicios](../perf/resultados/microservicios-2026-11-03T00-43-52-600Z.md).
 
+![Gráfica comparativa de p95 y throughput](qa/artifacts/rendimiento-sprint-3.svg)
+
+La gráfica separa latencia p95 (menos es mejor) de throughput (más es mejor), para no mezclar
+milisegundos y solicitudes por segundo en la misma escala.
+
 ## Conclusiones
 
 - **RNF5 superado para este perfil:** p95 de rutas es menor a 2 s en ambas arquitecturas; los

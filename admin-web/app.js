@@ -4,6 +4,7 @@
   const CFG = window.COLCATRUFIS_CONFIG;
   const ROLES_PANEL = ['admin', 'encargado'];
   const CLAVE_SESION = 'colcatrufis.sesion';
+  const INTERVALO_RADIOTAXIS_MS = 30000;
 
   const $ = (id) => document.getElementById(id);
   let mapa = null;
@@ -11,6 +12,8 @@
   let datosRutas = null;
   let editor = null;
   let eligiendoCercanas = false;
+  let temporizadorRadiotaxis = null;
+  let paginaUsuarios = 1;
 
   // ---------- Sesión (JWT emitido por la API de Usuarios) ----------
 
@@ -54,6 +57,19 @@
     return true;
   }
 
+  /** Revoca el refresh token en el servidor. Si falla, la sesión local se cierra igual. */
+  async function revocarSesion() {
+    const actual = sesion.leer();
+    if (!actual?.access_token) return;
+    try {
+      await fetch(`${CFG.gatewayUrl}/api/usuarios/sesion`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${actual.access_token}` },
+        body: JSON.stringify({ refresh_token: actual.refresh_token }),
+      });
+    } catch { /* sin conexión: el refresh token expirará solo */ }
+  }
+
   /** GET al Gateway con el JWT; si responde 401 intenta un refresh una sola vez. */
   async function api(ruta, opciones = {}, reintento = true) {
     const token = sesion.leer()?.access_token;
@@ -86,7 +102,14 @@
     popupAbierto?.remove();
     popupAbierto = null;
     editor = null;
+    clearInterval(temporizadorRadiotaxis);
+    temporizadorRadiotaxis = null;
     $('editor-ruta').hidden = true;
+    $('seccion-usuarios').hidden = true;
+    $('panel-usuarios').hidden = true;
+    $('btn-usuarios').setAttribute('aria-expanded', 'false');
+    $('usuarios-total').textContent = '';
+    paginaUsuarios = 1;
     sesion.borrar();
     if (mapa) { mapa.remove(); mapa = null; }
     mostrarLogin(mensaje);
@@ -98,6 +121,7 @@
     $('usuario-rol').textContent = usuario.rol;
     $('vista-login').hidden = true;
     $('vista-mapa').hidden = false;
+    $('seccion-usuarios').hidden = usuario.rol !== 'admin';
     estado('Cargando rutas…');
 
     mapa = new maplibregl.Map({
@@ -120,10 +144,6 @@
       if (editor?.arrastrando == null) return;
       editor.coordenadas[editor.arrastrando] = [e.lngLat.lng, e.lngLat.lat];
       actualizarEdicion();
-    });
-    mapa.on('mouseup', () => {
-      if (editor) editor.arrastrando = null;
-      mapa?.dragPan.enable();
     });
 
     await cargarDatos();
@@ -194,6 +214,22 @@
       },
     });
 
+    mapa.addSource('radiotaxis', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    mapa.addLayer({
+      id: 'radiotaxis',
+      type: 'circle',
+      source: 'radiotaxis',
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 5, 16, 9],
+        'circle-color': '#facc15',
+        'circle-stroke-color': '#1d2733',
+        'circle-stroke-width': 2,
+      },
+    });
+    actualizarRadiotaxis();
+    clearInterval(temporizadorRadiotaxis);
+    temporizadorRadiotaxis = setInterval(actualizarRadiotaxis, INTERVALO_RADIOTAXIS_MS);
+
     const popupRuta = (e) => {
       if (editor || eligiendoCercanas) return;
       const p = e.features[0].properties;
@@ -208,13 +244,31 @@
       const lineas = JSON.parse(p.rutas || '[]').map((r) => r.linea).join(', ');
       popup(e.lngLat, `<strong>${esc(p.nombre)}</strong><br><small>Líneas: ${esc(lineas)}</small>`);
     });
-    for (const capa of ['rutas', 'rutas-suspendidas', 'paradas']) {
+    // Al final: un radio taxi suele estar sobre una ruta y su detalle debe prevalecer al tocarlo.
+    mapa.on('click', 'radiotaxis', (e) => {
+      if (editor || eligiendoCercanas) return;
+      const p = e.features[0].properties;
+      const demo = p.origen === 'demo' ? '<br><small>Datos de demostración</small>' : '';
+      popup(e.lngLat, `<strong>${esc(p.nombre)}</strong><br>${esc(p.telefono || 'Sin teléfono')}${demo}`);
+    });
+    for (const capa of ['rutas', 'rutas-suspendidas', 'paradas', 'radiotaxis']) {
       mapa.on('mouseenter', capa, () => { mapa.getCanvas().style.cursor = 'pointer'; });
       mapa.on('mouseleave', capa, () => { mapa.getCanvas().style.cursor = ''; });
     }
 
     listarRutas(rutas.features);
     encuadrar(rutas.features);
+  }
+
+  async function actualizarRadiotaxis() {
+    try {
+      const radiotaxis = await api('/api/ubicacion/radiotaxis');
+      mapa?.getSource('radiotaxis')?.setData(radiotaxis);
+      $('radiotaxis-total').textContent = `(${radiotaxis.features.length})`;
+    } catch (e) {
+      // Un fallo de esta capa no debe interrumpir el resto del panel; reintenta en el próximo ciclo
+      if (e.message !== 'No autenticado') $('radiotaxis-total').textContent = '(sin datos)';
+    }
   }
 
   function listarRutas(features) {
@@ -346,6 +400,36 @@
     } catch (error) { estado(error.message); }
   }
 
+  // ---------- Usuarios (solo admin) ----------
+
+  async function cargarUsuarios(pagina) {
+    try {
+      const resultado = await api(`/api/usuarios/lista?page=${pagina}&por_pagina=10`);
+      paginaUsuarios = resultado.current_page;
+      $('lista-usuarios').replaceChildren(...resultado.data.map((u) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${esc(u.name)}</strong> <span class="rol">${esc(u.rol)}</span>${u.activo ? '' : ' <span class="inactivo">desactivado</span>'}<br><small>${esc(u.email)}</small>`;
+        return li;
+      }));
+      $('usuarios-total').textContent = `(${resultado.total})`;
+      $('usuarios-pagina').textContent = `${resultado.current_page} / ${resultado.last_page}`;
+      $('usuarios-anterior').disabled = resultado.current_page <= 1;
+      $('usuarios-siguiente').disabled = resultado.current_page >= resultado.last_page;
+    } catch (e) {
+      if (e.message !== 'No autenticado') estado(e.message);
+    }
+  }
+
+  $('btn-usuarios').addEventListener('click', () => {
+    const abrir = $('panel-usuarios').hidden;
+    $('panel-usuarios').hidden = !abrir;
+    $('btn-usuarios').setAttribute('aria-expanded', String(abrir));
+    $('btn-usuarios').textContent = abrir ? 'Ocultar usuarios' : 'Ver usuarios';
+    if (abrir) cargarUsuarios(paginaUsuarios);
+  });
+  $('usuarios-anterior').addEventListener('click', () => cargarUsuarios(paginaUsuarios - 1));
+  $('usuarios-siguiente').addEventListener('click', () => cargarUsuarios(paginaUsuarios + 1));
+
   $('form-ruta').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!editor) return;
@@ -388,6 +472,12 @@
 
   // ---------- Eventos ----------
 
+  // En window y no en el mapa: soltar sobre un control del mapa también debe terminar el arrastre.
+  window.addEventListener('mouseup', () => {
+    if (editor) editor.arrastrando = null;
+    mapa?.dragPan.enable();
+  });
+
   $('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     const datos = new FormData(e.target);
@@ -404,10 +494,17 @@
     }
   });
 
-  $('btn-salir').addEventListener('click', () => cerrarSesion());
+  $('btn-salir').addEventListener('click', async () => {
+    await revocarSesion();
+    cerrarSesion();
+  });
 
   $('toggle-paradas').addEventListener('change', (e) => {
     if (mapa?.getLayer('paradas')) mapa.setLayoutProperty('paradas', 'visibility', e.target.checked ? 'visible' : 'none');
+  });
+
+  $('toggle-radiotaxis').addEventListener('change', (e) => {
+    if (mapa?.getLayer('radiotaxis')) mapa.setLayoutProperty('radiotaxis', 'visibility', e.target.checked ? 'visible' : 'none');
   });
 
   sesion.leer()?.access_token ? mostrarMapa() : mostrarLogin();

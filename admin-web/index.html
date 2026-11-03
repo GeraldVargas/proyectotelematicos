@@ -36,6 +36,7 @@
       <h2>Rutas <span id="rutas-total" class="contador"></span></h2>
       <ul id="lista-rutas" class="rutas"></ul>
       <label class="check"><input type="checkbox" id="toggle-paradas" checked> Mostrar paradas</label>
+      <label class="check"><input type="checkbox" id="toggle-radiotaxis" checked> Mostrar radio taxis <span id="radiotaxis-total" class="contador"></span></label>
       <section id="editor-ruta" hidden aria-labelledby="editor-titulo">
         <h2 id="editor-titulo">Editar línea <span id="editor-linea"></span></h2>
         <p class="ayuda">Arrastra los puntos del recorrido. Selecciona un punto para quitarlo.</p>
@@ -61,6 +62,18 @@
         <button id="btn-cercanas" type="button" class="secundario" aria-pressed="false">Elegir ubicación en el mapa</button>
         <p class="ayuda">Busca paradas a menos de 300 metros del punto que selecciones.</p>
         <ul id="lista-cercanas" class="cercanas" aria-live="polite"></ul>
+      </section>
+      <section id="seccion-usuarios" aria-labelledby="usuarios-titulo" hidden>
+        <h2 id="usuarios-titulo">Usuarios <span id="usuarios-total" class="contador"></span></h2>
+        <button id="btn-usuarios" type="button" class="secundario" aria-expanded="false">Ver usuarios</button>
+        <div id="panel-usuarios" hidden>
+          <ul id="lista-usuarios" class="usuarios"></ul>
+          <div class="herramientas">
+            <button id="usuarios-anterior" type="button" class="secundario">Anterior</button>
+            <span id="usuarios-pagina" class="contador"></span>
+            <button id="usuarios-siguiente" type="button" class="secundario">Siguiente</button>
+          </div>
+        </div>
       </section>
       <p id="estado" class="estado" role="status"></p>
       <footer class="atribucion">Rutas: © colaboradores de OpenStreetMap (ODbL)</footer>

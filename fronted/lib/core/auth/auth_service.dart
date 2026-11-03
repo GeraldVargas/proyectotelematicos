@@ -40,5 +40,14 @@ class AuthService {
   Future<Usuario> perfil() async =>
       Usuario.fromJson(await _client.get('/api/usuarios/perfil') as Map<String, dynamic>);
 
-  Future<void> logout() => _client.tokens.borrar();
+  /// Revoca el refresh token en el servidor. Si falla (sin conexión), la sesión local se cierra igual.
+  Future<void> logout() async {
+    try {
+      final refresh = await _client.tokens.leerRefreshToken();
+      await _client.delete('/api/usuarios/sesion', cuerpo: refresh == null ? null : {'refresh_token': refresh});
+    } on ApiException {
+      // El refresh token expirará solo
+    }
+    await _client.tokens.borrar();
+  }
 }

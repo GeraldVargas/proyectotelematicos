@@ -42,6 +42,9 @@ class GatewayClient {
   Future<dynamic> post(String ruta, Map<String, dynamic> cuerpo, {bool autenticado = true}) =>
       _enviar('POST', ruta, cuerpo: cuerpo, autenticado: autenticado);
 
+  Future<dynamic> delete(String ruta, {Map<String, dynamic>? cuerpo}) =>
+      _enviar('DELETE', ruta, cuerpo: cuerpo);
+
   Future<dynamic> _enviar(
     String metodo,
     String ruta, {

@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-10-27T21:41:42.656Z",
+  "fecha": "2026-11-03T00:57:28.858Z",
   "panel": "http://localhost:8081",
   "checks": [
     "Administrador ve mapa y al menos cuatro rutas",
@@ -14,6 +14,11 @@
     "Cancelar edición retira el trazado temporal",
     "Guardar desde el editor web confirma la actualización del trazado",
     "Panel muestra paradas cercanas obtenidas del Gateway",
+    "Panel muestra la capa de radio taxis desde la API",
+    "Seleccionar un radio taxi muestra su detalle",
+    "Ocultar radio taxis cambia la capa del mapa",
+    "Administrador ve la lista de usuarios",
+    "Salir del panel revoca el refresh token en el servidor",
     "El rol usuario no entra al panel ni conserva sesión administrativa",
     "Swagger UI muestra los tres servicios",
     "Swagger Try it out ejecuta GET de rutas con JWT y devuelve GeoJSON"

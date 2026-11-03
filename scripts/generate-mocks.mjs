@@ -29,6 +29,6 @@ const routes = seed.features.map((feature, index) => {
 const output = new URL('fronted/assets/mocks/', root);
 mkdirSync(output, { recursive: true });
 for (const [name, features] of [['ubicacion_rutas', routes], ['ubicacion_paradas', [...stops.values()]]]) {
-  writeFileSync(new URL(`${name}.json`, output), `${JSON.stringify({ type: 'FeatureCollection', features }, null, 2)}\n`);
+  writeFileSync(new URL(`${name}.json`, output), `${JSON.stringify({ type: 'FeatureCollection', features })}\n`);
 }
 console.log(`Fixtures: ${routes.length} rutas y ${stops.size} paradas (fuente: semilla OpenStreetMap).`);

@@ -2,6 +2,7 @@ param(
     [string]$Gateway = 'http://localhost:8080',
     [string]$Panel = 'http://localhost:8081',
     [string]$Swagger = 'http://localhost:8090',
+    [string]$Fcm = 'http://localhost:8091',
     [string]$ComposeProject = '',
     [string]$ComposeFile = (Join-Path $PSScriptRoot '../docker-compose.yml'),
     [switch]$Sprint2
@@ -133,5 +134,39 @@ if ($Sprint2) {
         $found = @($notifications.data | Where-Object { $_.evento_id -eq $eventId }).Count -gt 0
     }
     Check $found 'Edicion -> evento persistido -> Redis -> notificacion del suscriptor'
+
+    $adminAuth = @{Authorization = "Bearer $($admin.access_token)"}
+    Check ((Request '/api/usuarios/lista' 'GET' $auth).Status -eq 403) 'Usuario no lista usuarios'
+    Check ((Request '/api/usuarios/lista?por_pagina=5' 'GET' $adminAuth).Status -eq 200) 'Administrador lista usuarios'
+    Check ((Request "/api/usuarios/perfil/$($admin.usuario.id)" 'GET' $auth).Status -eq 403) 'Usuario no ve perfiles ajenos'
+    Check ((Request "/api/usuarios/perfil/$($session.usuario.id)" 'GET' $adminAuth).Status -eq 200) 'Administrador ve perfiles ajenos'
+    $otra = (Request '/api/usuarios/login' 'POST' @{} @{email = 'demo@colcatrufis.local'; password = 'demo12345'}).Body | ConvertFrom-Json
+    Check ((Request '/api/usuarios/sesion' 'DELETE' $auth @{refresh_token = $otra.refresh_token}).Status -eq 204) 'Logout por el Gateway'
+    Check ((Request '/api/usuarios/refresh' 'POST' @{} @{refresh_token = $otra.refresh_token}).Status -eq 401) 'Refresh token revocado'
+
+    Check (@($routes.features).Count -ge 6) 'Al menos 6 rutas cargadas'
+    Check ((Request '/api/ubicacion/radiotaxis').Status -eq 401) 'Radio taxis sin token devuelve 401'
+    $taxis = (Request '/api/ubicacion/radiotaxis' 'GET' $auth).Body | ConvertFrom-Json
+    Check ($taxis.type -eq 'FeatureCollection' -and @($taxis.features).Count -ge 1) 'Radio taxis como GeoJSON'
+    $taxi = $taxis.features[0]
+    $posicion = @{lat = $taxi.geometry.coordinates[1]; lng = $taxi.geometry.coordinates[0]}
+    Check ((Request "/api/ubicacion/radiotaxis/$($taxi.id)/posicion" 'PUT' $auth $posicion).Status -eq 403) 'Usuario no mueve radio taxis'
+    Check ((Request "/api/ubicacion/radiotaxis/$($taxi.id)/posicion" 'PUT' $adminAuth $posicion).Status -eq 200) 'Administrador actualiza la posicion'
+
+    Check ((Request '/api/notificaciones/historial?desde=2026-01-01&por_pagina=5' 'GET' $auth).Status -eq 200) 'Historial con filtro de fecha'
+    Check ((Request '/api/notificaciones/historial?desde=2026-02-01&hasta=2026-01-01' 'GET' $auth).Status -eq 422) 'Historial rechaza fechas invertidas'
+    $tokenFcm = "smoke-$([guid]::NewGuid())"
+    Check ((Request '/api/notificaciones/dispositivos' 'POST' $auth @{token = $tokenFcm; plataforma = 'android'}).Status -eq 201) 'Registro de dispositivo'
+    Check ((Request "/api/ubicacion/rutas/$($route.id)" 'PUT' $adminAuth $body).Status -eq 200) 'Edicion que dispara el push'
+    $pushed = $false
+    for ($i = 0; $i -lt 40 -and -not $pushed; $i++) {
+        Start-Sleep -Milliseconds 500
+        $messages = (Request "$Fcm/mensajes").Body | ConvertFrom-Json
+        $pushed = @($messages.mensajes | Where-Object { $_.token -eq $tokenFcm }).Count -gt 0
+    }
+    Check $pushed 'Edicion -> evento -> worker -> push recibido por FCM'
+    Check ((Request '/api/notificaciones/dispositivos' 'DELETE' $auth @{token = $tokenFcm}).Status -eq 204) 'Eliminacion de dispositivo'
+    Check ((Request '/api/notificaciones/suscripciones/252' 'DELETE' $auth).Status -eq 204) 'Desuscripcion de la linea 252'
+    Check ((Request '/api/notificaciones/suscripciones/252' 'DELETE' $auth).Status -eq 404) 'Desuscribir de nuevo devuelve 404'
 }
 Write-Output "Resultado: $checks comprobaciones correctas."

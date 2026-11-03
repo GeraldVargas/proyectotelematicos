@@ -1,5 +1,7 @@
 # Protección de main — requiere al administrador
 
+**Estado al 02/11/2026: pendiente.** Requiere una cuenta con rol admin en GitHub; el repositorio está en la cuenta de Gerald.
+
 Consulta del 27/10/2026 mediante GitHub CLI: `salvUs122` tiene lectura y push, pero `admin: false`
 en `GeraldVargas/proyectotelematicos`. No se modificó la configuración remota.
 

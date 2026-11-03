@@ -8,8 +8,8 @@ import '../../core/network/gateway_client.dart';
 import '../../core/network/gateway_config.dart';
 import '../../core/servicios.dart';
 
-/// Prueba de concepto del Sprint 1: mapa vectorial (MapLibre + OpenFreeMap) con las rutas
-/// servidas como GeoJSON por la API de Ubicación a través del Gateway.
+/// Mapa vectorial (MapLibre + OpenFreeMap) con las rutas, paradas y radio taxis servidos como
+/// GeoJSON por la API de Ubicación a través del Gateway.
 class MapaRutasScreen extends StatefulWidget {
   const MapaRutasScreen({super.key});
 
@@ -20,13 +20,16 @@ class MapaRutasScreen extends StatefulWidget {
 class _MapaRutasScreenState extends State<MapaRutasScreen> {
   static const _colcapirhua = LatLng(-17.3895, -66.2405);
   static const _capasRutas = {'rutas-linea', 'rutas-borde'};
+  static const _capaRadiotaxis = 'radiotaxis-punto';
 
   MapLibreMapController? _mapa;
   StreamSubscription<void>? _expiro;
+  Timer? _refrescoRadiotaxis;
   bool _cargando = true;
   String? _error;
   int _totalRutas = 0;
   final Map<String, Map<String, dynamic>> _rutasPorId = {};
+  final Map<String, Map<String, dynamic>> _radiotaxisPorId = {};
 
   @override
   void initState() {
@@ -34,11 +37,13 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
     _expiro = Servicios.gateway.sesionExpirada.listen((_) {
       if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
     });
+    Servicios.push.iniciar();
   }
 
   @override
   void dispose() {
     _expiro?.cancel();
+    _refrescoRadiotaxis?.cancel();
     super.dispose();
   }
 
@@ -82,6 +87,8 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
         ),
       );
 
+      await _iniciarRadiotaxis(mapa);
+
       final features = (rutas['features'] as List).cast<Map>();
       _rutasPorId
         ..clear()
@@ -92,6 +99,39 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
       if (e.statusCode != 401) setState(() => _error = e.mensaje);
     } finally {
       if (mounted) setState(() => _cargando = false);
+    }
+  }
+
+  /// Un fallo en esta capa no impide usar el mapa de rutas: se reintenta en el siguiente ciclo.
+  Future<void> _iniciarRadiotaxis(MapLibreMapController mapa) async {
+    await mapa.addGeoJsonSource('radiotaxis', const {'type': 'FeatureCollection', 'features': []});
+    await mapa.addCircleLayer(
+      'radiotaxis',
+      _capaRadiotaxis,
+      const CircleLayerProperties(
+        circleRadius: 8.0,
+        circleColor: '#FACC15',
+        circleStrokeColor: '#1D2733',
+        circleStrokeWidth: 2.0,
+      ),
+    );
+    await _actualizarRadiotaxis();
+    _refrescoRadiotaxis?.cancel();
+    _refrescoRadiotaxis = Timer.periodic(GatewayConfig.refrescoRadiotaxis, (_) => _actualizarRadiotaxis());
+  }
+
+  Future<void> _actualizarRadiotaxis() async {
+    try {
+      final datos = await Servicios.ubicacion.radiotaxis();
+      if (!mounted) return;
+      await _mapa?.setGeoJsonSource('radiotaxis', datos);
+      _radiotaxisPorId
+        ..clear()
+        ..addEntries((datos['features'] as List).cast<Map>().map(
+              (f) => MapEntry('${f['id']}', Map<String, dynamic>.from(f['properties'] as Map)),
+            ));
+    } on ApiException {
+      // Se conservan las últimas posiciones conocidas
     }
   }
 
@@ -115,21 +155,27 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
     ));
   }
 
-  /// Al tocar una ruta se muestra su número y su sindicato.
-  /// Las capas GeoJSON son interactivas: MapLibre entrega el `id` del feature (id de la ruta).
+  /// Al tocar una ruta se muestra su número y su sindicato; al tocar un radio taxi, su contacto.
+  /// Las capas GeoJSON son interactivas: MapLibre entrega el `id` del feature.
   void _alTocarFeature(Point<double> _, LatLng __, String id, String capa, Annotation? ___) {
-    if (!_capasRutas.contains(capa)) return;
-    final propiedades = _rutasPorId[id];
-    if (propiedades == null || !mounted) return;
+    if (!mounted) return;
+    final Widget? detalle;
+    if (capa == _capaRadiotaxis) {
+      final propiedades = _radiotaxisPorId[id];
+      detalle = propiedades == null ? null : _DetalleRadiotaxi(propiedades: propiedades);
+    } else if (_capasRutas.contains(capa)) {
+      final propiedades = _rutasPorId[id];
+      detalle = propiedades == null ? null : _DetalleRuta(propiedades: propiedades);
+    } else {
+      detalle = null;
+    }
+    if (detalle == null) return;
 
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (_) => _DetalleRuta(propiedades: propiedades),
-    );
+    showModalBottomSheet<void>(context: context, showDragHandle: true, builder: (_) => detalle!);
   }
 
   Future<void> _salir() async {
+    await Servicios.push.detener();
     await Servicios.auth.logout();
     if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
   }
@@ -140,6 +186,11 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
       appBar: AppBar(
         title: Text(_totalRutas > 0 ? 'Rutas de trufi ($_totalRutas)' : 'Rutas de trufi'),
         actions: [
+          IconButton(
+            tooltip: 'Avisos por línea',
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/suscripciones'),
+          ),
           IconButton(
             tooltip: 'App clásica',
             icon: const Icon(Icons.view_list),
@@ -213,6 +264,34 @@ class _DetalleRuta extends StatelessWidget {
           if (p['tarifa'] != null) ...[
             const SizedBox(height: 8),
             Text('Tarifa: Bs ${p['tarifa']}'),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DetalleRadiotaxi extends StatelessWidget {
+  final Map<String, dynamic> propiedades;
+
+  const _DetalleRadiotaxi({required this.propiedades});
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    final p = propiedades;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${p['nombre']}', style: tema.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text('Teléfono: ${p['telefono'] ?? 'Sin información'}', style: tema.textTheme.bodyLarge),
+          if (p['origen'] == 'demo') ...[
+            const SizedBox(height: 8),
+            Text('Datos de demostración', style: tema.textTheme.labelMedium),
           ],
         ],
       ),

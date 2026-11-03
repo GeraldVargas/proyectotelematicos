@@ -34,6 +34,10 @@ dependencies:
   # Sprint 1 — microservicios
   flutter_secure_storage: ^10.3.4 # JWT guardado cifrado (Keystore / Keychain)
   maplibre_gl: ^0.27.1            # Mapa vectorial; plan B: flutter_map + vector_map_tiles
+
+  # Sprint 2 — notificaciones push
+  firebase_core: ^5.1.0
+  firebase_messaging: ^17.0.1
   
 dev_dependencies:
   flutter_test:

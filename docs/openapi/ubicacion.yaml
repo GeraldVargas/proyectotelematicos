@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ColcaTrufis — API de Ubicación
-  version: 1.1.0
+  version: 1.2.0
   description: |
     Rutas y paradas almacenadas en PostGIS (EPSG:4326) y servidas como GeoJSON (RFC 7946).
     Las coordenadas siempre van en orden **[longitud, latitud]**.
@@ -17,6 +17,8 @@ tags:
     description: Recorridos de transporte y edición administrativa
   - name: Paradas
     description: Paradas y búsqueda espacial por distancia
+  - name: Radio taxis
+    description: Posición actual de los radio taxis disponibles
 paths:
   /api/ubicacion/rutas:
     get:
@@ -173,6 +175,65 @@ paths:
                                     distancia_m: { type: number, minimum: 0, example: 112.35 }
         '401': { $ref: '#/components/responses/NoAutorizado' }
         '422': { $ref: '#/components/responses/Validacion' }
+  /api/ubicacion/radiotaxis:
+    get:
+      operationId: listarRadiotaxis
+      tags: [Radio taxis]
+      summary: Posición actual de los radio taxis disponibles
+      description: |
+        Los clientes consultan este recurso periódicamente (cada 30 s). `origen` indica de dónde sale
+        el punto: `demo` son datos ficticios de desarrollo y `monolito` es la parada base del sindicato;
+        todavía no hay GPS de vehículos.
+      responses:
+        '200':
+          description: Radio taxis disponibles con posición conocida
+          content:
+            application/geo+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FeatureCollection'
+                  - type: object
+                    properties:
+                      features:
+                        type: array
+                        items: { $ref: '#/components/schemas/RadiotaxiFeature' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/ubicacion/radiotaxis/{id}/posicion:
+    put:
+      operationId: actualizarPosicionRadiotaxi
+      tags: [Radio taxis]
+      summary: Actualizar la posición y disponibilidad (solo administrador)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng]
+              properties:
+                lat: { type: number, minimum: -90, maximum: 90, example: -17.3895 }
+                lng: { type: number, minimum: -180, maximum: 180, example: -66.2405 }
+                disponible: { type: boolean }
+      responses:
+        '200':
+          description: Posición guardada
+          content:
+            application/geo+json:
+              schema: { $ref: '#/components/schemas/RadiotaxiFeature' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '403':
+          description: El usuario autenticado no tiene rol admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Radio taxi no encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/Validacion' }
 components:
   securitySchemes:
     bearerAuth:
@@ -289,3 +350,23 @@ components:
                   id: { type: integer }
                   linea: { type: string }
                   color: { type: string }
+    RadiotaxiFeature:
+      type: object
+      properties:
+        type: { type: string, enum: [Feature] }
+        id: { type: integer }
+        geometry:
+          type: object
+          properties:
+            type: { type: string, enum: [Point] }
+            coordinates: { $ref: '#/components/schemas/Posicion' }
+        properties:
+          type: object
+          properties:
+            id: { type: integer }
+            nombre: { type: string, example: Radio Taxi Demo 1 }
+            sindicato: { type: string, nullable: true }
+            telefono: { type: string, nullable: true }
+            disponible: { type: boolean }
+            origen: { type: string, enum: [demo, monolito] }
+            posicion_actualizada_en: { type: string, format: date-time, nullable: true }

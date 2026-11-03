@@ -1,5 +1,6 @@
-# Entorno local de ColcaTrufis con microservicios (Sprint 1).
+# Entorno local de ColcaTrufis con microservicios.
 #   docker compose up -d --build
+#   docker compose --profile demo up -d   # además mueve los radio taxis de demostración
 # Único puerto público para las APIs: el Gateway en http://localhost:8080
 # Las versiones de las imágenes están fijadas para que todos tengan el mismo entorno.
 
@@ -113,6 +114,19 @@ services:
       redis:
         condition: service_healthy
 
+  # Solo datos de demostración: sin GPS real no hay otra fuente de movimiento
+  simulador-radiotaxis:
+    build: ./services/api-ubicacion
+    profiles: [demo]
+    command: ["php", "artisan", "radiotaxis:simular"]
+    environment:
+      <<: *ubicacion-env
+      RUN_MIGRATIONS: "false"
+    restart: unless-stopped
+    depends_on:
+      api-ubicacion:
+        condition: service_healthy
+
   worker-eventos-ubicacion:
     build: ./services/api-ubicacion
     command: ["php", "artisan", "eventos:despachar"]
@@ -154,6 +168,13 @@ services:
       DB_DATABASE: notificaciones
       DB_USERNAME: notificaciones
       DB_PASSWORD: notificaciones
+      # Local: fcm-mock. Con Firebase real: FCM_URL=https://fcm.googleapis.com, FCM_PROJECT_ID y
+      # FCM_CREDENCIALES=/secrets/firebase.json (ver docs/adr/0005)
+      FCM_URL: ${FCM_URL:-http://fcm-mock:8080}
+      FCM_PROJECT_ID: ${FCM_PROJECT_ID:-colcatrufis-local}
+      FCM_CREDENCIALES: ${FCM_CREDENCIALES:-}
+    volumes:
+      - ./secrets:/secrets:ro
     healthcheck: *healthcheck-laravel
     depends_on:
       db-notificaciones:
@@ -167,10 +188,28 @@ services:
     environment:
       <<: *notificaciones-env
       RUN_MIGRATIONS: "false"
+    volumes:
+      - ./secrets:/secrets:ro
     restart: unless-stopped
     depends_on:
       api-notificaciones:
         condition: service_healthy
+      fcm-mock:
+        condition: service_healthy
+
+  # Sustituye a FCM en local: recibe los push sin credenciales de Firebase
+  fcm-mock:
+    image: php:8.3.13-cli-alpine3.20
+    command: ["php", "-S", "0.0.0.0:8080", "/app/index.php"]
+    ports:
+      - "${FCM_MOCK_PORT:-8091}:8080"
+    volumes:
+      - ./docker/fcm-mock:/app:ro
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost:8080/salud') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
   db-notificaciones:
     image: mysql:8.4.3

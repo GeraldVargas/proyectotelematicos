@@ -13,4 +13,8 @@ class UbicacionService {
   Future<Map<String, dynamic>> paradas({int? rutaId}) async => Map<String, dynamic>.from(
         await _client.get('/api/ubicacion/paradas', query: rutaId == null ? null : {'ruta_id': '$rutaId'}) as Map,
       );
+
+  Future<Map<String, dynamic>> radiotaxis() async => Map<String, dynamic>.from(
+        await _client.get('/api/ubicacion/radiotaxis') as Map,
+      );
 }

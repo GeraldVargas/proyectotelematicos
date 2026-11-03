@@ -1,0 +1,50 @@
+# Monolito con los mismos datos que los microservicios, solo para la línea base de rendimiento.
+#   docker compose -f perf/monolito/docker-compose.yml up -d --build --wait
+#   docker compose -f perf/monolito/docker-compose.yml down -v
+name: colcatrufis-monolito
+
+services:
+  monolito:
+    build:
+      context: ../../backend
+      dockerfile: ../perf/monolito/Dockerfile
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_CHANNEL: stderr
+      APP_KEY: base64:Q29sY2FUcnVmaXMtc29sby1wYXJhLWRlc2Fycm9sbG8=
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_DATABASE: colcatrufis
+      DB_USERNAME: colcatrufis
+      DB_PASSWORD: colcatrufis
+      # Configuración propia del monolito (.env.example): sesión y caché en la BD
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    ports:
+      - "${MONOLITO_PORT:-8000}:8000"
+    volumes:
+      - ./sembrar.php:/perf/sembrar.php:ro
+      - ../../services/api-ubicacion/database/data/rutas_colcapirhua.geojson:/perf/rutas.geojson:ro
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost:8000/up') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4.3
+    environment:
+      MYSQL_DATABASE: colcatrufis
+      MYSQL_USER: colcatrufis
+      MYSQL_PASSWORD: colcatrufis
+      MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30

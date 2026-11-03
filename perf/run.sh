@@ -2,7 +2,8 @@
 # Ejecuta los escenarios de carga con k6 en Docker (no hace falta instalar k6).
 #   ./perf/run.sh monolito        # línea base, monolito en http://localhost:8000
 #   ./perf/run.sh microservicios  # a través del API Gateway en http://localhost:8080
-# Variables opcionales: BASE_URL, VUS (20), DURACION (2m), EMAIL, PASSWORD, SIN_RADIOTAXIS
+# Variables opcionales: BASE_URL, VUS (20), DURACION (2m), EMAIL, PASSWORD, SIN_RADIOTAXIS, RED
+# RED: red Docker del sistema medido, para que k6 no pase por el puerto publicado en el host
 set -e
 TARGET=${1:-monolito}
 case "$TARGET" in
@@ -12,7 +13,7 @@ case "$TARGET" in
 esac
 DIR=$(cd "$(dirname "$0")" && pwd)
 mkdir -p "$DIR/resultados"
-docker run --rm -i \
+docker run --rm -i ${RED:+--network "$RED"} \
   --user "$(id -u):$(id -g)" \
   --add-host=host.docker.internal:host-gateway \
   -v "$DIR/k6:/scripts:ro" -v "$DIR/resultados:/resultados" \

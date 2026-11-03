@@ -11,6 +11,14 @@ class ParadasCercanasTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Otras clases de prueba siembran paradas reales en la BD compartida
+        Parada::query()->delete();
+    }
+
     private function parada(float $lng, float $lat): int
     {
         $p = Parada::create(['nombre' => 'Parada de prueba']);

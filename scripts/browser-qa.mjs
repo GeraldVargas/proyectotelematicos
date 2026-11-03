@@ -9,6 +9,7 @@ const panel = process.env.PANEL_URL || 'http://localhost:8081';
 const chrome = process.env.CHROME_PATH || [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser',
 ].find(existsSync);
 if (!chrome) throw new Error('No se encontró Chrome. Define CHROME_PATH.');
@@ -108,11 +109,11 @@ try {
   await screenshot('panel-detalle.png');
   await evaluate(`document.querySelector('.ruta-editar').click()`);
   check(await evaluate(`!document.getElementById('editor-ruta').hidden && !!__qaMap.getLayer('edicion-puntos')`), 'Editor administrativo muestra puntos del trazado');
-  await until(() => evaluate(`__qaMap.loaded()`), 'puntos del editor renderizados');
+  await until(() => evaluate(`__qaMap.loaded() && __qaMap.queryRenderedFeatures({ layers: ['edicion-puntos'] }).length > 0`), 'puntos del editor renderizados');
   const vertex = await evaluate(`(() => {
     const coordinates = __qaMap.getSource('edicion')._data.features[0].geometry.coordinates;
     window.__qaOriginal = JSON.stringify(coordinates);
-    const p = __qaMap.project(coordinates[0]); const bounds = __qaMap.getCanvas().getBoundingClientRect();
+    const p = __qaMap.project(coordinates[Math.floor(coordinates.length / 2)]); const bounds = __qaMap.getCanvas().getBoundingClientRect();
     return {x: p.x + bounds.left, y: p.y + bounds.top, count: coordinates.length};
   })()`);
   await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: vertex.x, y: vertex.y, button: 'left', clickCount: 1 });
@@ -133,7 +134,26 @@ try {
   await evaluate(`document.getElementById('btn-cercanas').click(); (() => { const p = __qaMap.getSource('paradas')._data.features[0].geometry.coordinates; __qaMap.fire('click', { point: __qaMap.project(p), lngLat: new maplibregl.LngLat(...p) }); })()`);
   await until(() => evaluate(`document.querySelectorAll('#lista-cercanas li').length > 0`), 'consulta de cercanía');
   check(true, 'Panel muestra paradas cercanas obtenidas del Gateway');
+  await until(() => evaluate(`__qaMap.getSource('radiotaxis')?._data?.features?.length > 0`), 'capa de radio taxis');
+  check(await evaluate(`!!__qaMap.getLayer('radiotaxis') && /\\(\\d+\\)/.test(document.getElementById('radiotaxis-total').textContent)`), 'Panel muestra la capa de radio taxis desde la API');
+  await until(() => evaluate(`__qaMap.loaded()`), 'radio taxis renderizados');
+  await evaluate(`(() => { const p = __qaMap.getSource('radiotaxis')._data.features[0].geometry.coordinates; __qaMap.jumpTo({ center: p, zoom: 16 }); })()`);
+  await until(() => evaluate(`__qaMap.loaded()`), 'zoom al radio taxi');
+  await evaluate(`(() => { const p = __qaMap.getSource('radiotaxis')._data.features[0].geometry.coordinates; __qaMap.fire('click', { point: __qaMap.project(p), lngLat: new maplibregl.LngLat(...p) }); })()`);
+  await until(() => evaluate(`[...document.querySelectorAll('.maplibregl-popup-content')].some(p => p.textContent.includes('Radio Taxi'))`), 'detalle de radio taxi');
+  check(true, 'Seleccionar un radio taxi muestra su detalle');
+  await screenshot('panel-radiotaxis.png');
+  await evaluate(`document.getElementById('toggle-radiotaxis').click()`);
+  check(await evaluate(`__qaMap.getLayoutProperty('radiotaxis', 'visibility') === 'none'`), 'Ocultar radio taxis cambia la capa del mapa');
+  await evaluate(`document.getElementById('toggle-radiotaxis').click(); document.getElementById('btn-usuarios').click()`);
+  await until(() => evaluate(`document.querySelectorAll('#lista-usuarios li').length >= 2`), 'lista de usuarios');
+  check(await evaluate(`document.getElementById('lista-usuarios').textContent.includes('admin@colcatrufis.local')`), 'Administrador ve la lista de usuarios');
+  await screenshot('panel-usuarios.png');
+  const refreshAntes = await evaluate(`JSON.parse(sessionStorage.getItem('colcatrufis.sesion')).refresh_token`);
   await evaluate(`document.getElementById('btn-salir').click()`);
+  await until(() => evaluate(`!document.getElementById('vista-login').hidden`), 'cierre de sesión');
+  const refreshRevocado = await evaluate(`fetch(${JSON.stringify((process.env.GATEWAY_URL || 'http://localhost:8080') + '/api/usuarios/refresh')}, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({refresh_token: ${JSON.stringify(refreshAntes)}}) }).then(r => r.status)`);
+  check(refreshRevocado === 401, 'Salir del panel revoca el refresh token en el servidor');
   await login('demo@colcatrufis.local', 'demo12345');
   await until(() => evaluate(`document.getElementById('login-error').textContent.includes('no tiene acceso')`), 'rechazo de rol usuario');
   check(await evaluate(`document.getElementById('vista-mapa').hidden && !sessionStorage.getItem('colcatrufis.sesion')`), 'El rol usuario no entra al panel ni conserva sesión administrativa');

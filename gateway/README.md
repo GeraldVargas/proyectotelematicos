@@ -17,3 +17,8 @@ Para ver la configuración final generada:
 ```bash
 docker compose run --rm gateway check -c /etc/krakend/krakend.tmpl -dtc
 ```
+
+## Cambios de configuración
+
+KrakenD lee `settings/endpoints.json` solo al arrancar. `docker compose up -d --build` no lo reinicia
+si su imagen no cambió: tras agregar rutas ejecuta `docker compose restart gateway`, o responderá 404.

@@ -3,9 +3,19 @@
 Escenarios en [`k6/escenarios.js`](k6/escenarios.js). Se ejecutan con k6 en Docker:
 
 ```bash
-./perf/run.sh monolito          # Sprint 1: línea base (monolito en http://localhost:8000)
-./perf/run.sh microservicios    # Sprint 2: mismo escenario contra el Gateway (:8080)
+# Línea base: monolito en contenedores, con los mismos datos que los microservicios
+docker compose stop
+docker compose -f perf/monolito/docker-compose.yml up -d --build --wait
+RED=colcatrufis-monolito_default BASE_URL=http://monolito:8000 EMAIL=admin@admin.com PASSWORD=password ./perf/run.sh monolito
+docker compose -f perf/monolito/docker-compose.yml down -v
+
+# Microservicios: mismo perfil, a través del Gateway
+docker compose up -d --wait
+RED=telematicos_default BASE_URL=http://gateway:8080 ./perf/run.sh microservicios
 ```
+
+`RED` es la red Docker del sistema medido (`<carpeta del proyecto>_default` para los microservicios).
+Úsala siempre: por el puerto publicado, Colima añade un túnel que limita la carga y provoca errores de conexión.
 
 Cada corrida deja `resultados/<target>-<fecha>.md` (resumen, se versiona) y `.json` (detalle, no se versiona).
 
@@ -22,48 +32,39 @@ escenario, throughput (req/s) y tasa de error. Umbrales: p95 de rutas < 2 s (RNF
 
 ## Condiciones fijas (para que las mediciones sean comparables)
 
-### Estado al 27/10/2026
+### Alcance de los datos
 
-La base del monolito no está accesible y no se recibió un respaldo: **la línea base real sigue
-pendiente**. No se ejecutan cargas contra el servidor público del municipio.
+La BD de producción del monolito no está disponible, y no se ejecutan cargas contra el servidor público
+del municipio. La línea base usa el **esquema y el código reales del monolito con los datos de la
+semilla OSM** ([`monolito/sembrar.php`](monolito/sembrar.php)): las mismas 22 rutas (10 723 puntos) y 4
+radio taxis que los microservicios. Es comparable con ellos, pero no representa el volumen de producción.
 
-Se añadió un ejecutor para PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File perf/run.ps1 -Target monolito
-powershell -ExecutionPolicy Bypass -File perf/run.ps1 -Target microservicios -Network proyectotelematicos_default -BaseUrl http://gateway:8080 -Vus 5 -Duracion 10s -Rampa 5s -Bajada 5s -SinRadiotaxis
-```
-
-La segunda orden es una comprobación funcional parcial, no una línea base ni una comparación:
-omite radio taxis, tiene 4 VUs efectivos (1 login, 3 rutas) y dura 20 s con rampas incluidas.
-Sus resúmenes reales se guardan en `resultados/`. Una primera ejecución simultánea con la
-construcción de otro entorno y Chrome tuvo 0 % de errores HTTP, pero p95 de rutas de 6148 ms;
-**no cumplió** el umbral de 2 s. Se conserva como diagnóstico, sin ocultar ese resultado ni usarlo
-como medición comparable.
-
-Repetición sin la construcción desechable ni Chrome ejecutándose: p50/p95 de login **476/610 ms**,
-p50/p95 de rutas **166/233 ms**, **14.2 req/s**, **0 % de errores HTTP**; 36 muestras de login y
-251 de rutas. Cumplió los umbrales de esta prueba corta. [Resumen real](resultados/microservicios-2026-10-27T21-21-46-422Z.md).
-No sustituye la línea base del monolito ni valida el perfil completo de 20 VUs/2 minutos.
-
-Equipo observado: Intel Core i5-12450H, 7.7 GiB de RAM, Windows_NT 10.0.26200, Docker Desktop.
-Para medir el monolito se necesita su BD real, acceso local, usuario de prueba y los mismos datos
-y escenarios en ambas arquitecturas. Los resultados del Gateway por sí solos no prueban una mejora.
-
-Completar antes de la primera corrida y **no cambiar** entre sprints:
+No cambiar entre sprints:
 
 | Condición | Valor |
 |---|---|
-| Equipo (CPU / RAM / SO) | _p. ej. Ryzen 5 5600H, 16 GB, Ubuntu 24.04_ |
-| Dónde corre el sistema | _misma PC que k6 / otra PC en la LAN_ |
-| Monolito: servidor PHP | _`php artisan serve` / nginx + php-fpm_ |
-| Datos | _dump de la BD de producción del <fecha>, N trufis, M puntos_ |
-| VUs / duración | 20 VUs / 2 min (variables `VUS`, `DURACION`) |
-| Usuario de login | admin del panel (`EMAIL`, `PASSWORD`) |
-| Red | _cableada / Wi-Fi_; sin otras cargas pesadas |
+| Equipo | Apple M4, 16 GB, macOS 26.4.1 |
+| Dónde corre el sistema | Misma PC que k6, en Colima (aarch64, 4 CPU, 6 GB) |
+| Servidor PHP | `php artisan serve` con 4 workers, PHP 8.3.13, `APP_DEBUG=true` (monolito y microservicios) |
+| Datos | Semilla OSM: 22 rutas, 10 723 puntos, 4 radio taxis |
+| VUs / duración | 20 VUs (login 4, rutas 12, radio taxis 4), rampa 20 s, 2 min, bajada 10 s |
+| Usuario de login | Monolito `admin@admin.com`; microservicios `admin@colcatrufis.local` |
+| Red | Red Docker interna (variable `RED`); sin otras cargas pesadas |
+
+**El login no es equivalente:** en el monolito son dos peticiones (formulario y POST con sesión y CSRF);
+en microservicios, un POST que devuelve el JWT. En Mac, además, la imagen de PostGIS es amd64 y corre
+emulada, lo que penaliza a los endpoints de Ubicación frente a MySQL nativo del monolito. Para la
+comparación final conviene repetir ambas medidas en un equipo x86.
 
 ## Resultados
 
-| Fecha | Arquitectura | Login p50 / p95 | Rutas p50 / p95 | Radiotaxis p50 / p95 | req/s | Error % |
-|---|---|---|---|---|---|---|
-| _pendiente_ | monolito | | | | | |
+| Fecha | Arquitectura | Login p50 / p95 | Rutas p50 / p95 | Radio taxis p50 / p95 | req/s | Error % | Informe |
+|---|---|---|---|---|---|---|---|
+| 02/11/2026 | **monolito (línea base)** | 1072 / 1319 ms | 480 / 688 ms | 411 / 602 ms | 39,4 | 0,00 | [resultado](resultados/monolito-2026-11-03T00-40-18-619Z.md) |
+| 02/11/2026 | microservicios (preliminar) | 597 / 746 ms | 1001 / 1259 ms | 977 / 1216 ms | 21,9 | 0,00 | [resultado](resultados/microservicios-2026-11-03T00-43-52-600Z.md) |
+
+La fila de microservicios es un adelanto: el análisis comparativo y sus conclusiones son del Sprint 3.
+
+La corrida [`monolito-2026-11-03T00-37-29`](resultados/monolito-2026-11-03T00-37-29-722Z.md), por el puerto
+publicado, se conserva como diagnóstico y no es la línea base: 18,2 req/s y 1,96 % de errores de conexión
+por el túnel de Colima, que desaparecieron al medir por la red Docker.

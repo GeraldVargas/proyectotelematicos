@@ -13,11 +13,11 @@ Rutas de trufi, paradas y radio taxis de Colcapirhua (Cochabamba). Este reposito
 
 | Carpeta | Contenido |
 |---|---|
-| `services/api-usuarios` | Registro, login y emisión de JWT RS256 (Laravel 11) |
-| `services/api-ubicacion` | Rutas y paradas en PostGIS, servidas como GeoJSON (Laravel 11) |
-| `services/api-notificaciones` | Notificaciones y consumidor de eventos Redis (Laravel 11) |
+| `services/api-usuarios` | Registro, login, cierre de sesión y emisión de JWT RS256 (Laravel 11) |
+| `services/api-ubicacion` | Rutas, paradas y radio taxis en PostGIS, servidos como GeoJSON (Laravel 11) |
+| `services/api-notificaciones` | Notificaciones, suscripciones, consumidor de eventos Redis y push FCM (Laravel 11) |
 | `gateway/` | Configuración del API Gateway (KrakenD) |
-| `admin-web/` | Panel web: login JWT + mapa MapLibre GL JS |
+| `admin-web/` | Panel web: login JWT, mapa MapLibre GL JS, radio taxis, edición de rutas y usuarios |
 | `fronted/` | App móvil Flutter |
 | `backend/` | Monolito Laravel actual (sigue en producción) |
 | `perf/` | Pruebas de carga k6 (línea base del monolito y comparación) |
@@ -40,6 +40,7 @@ docker compose ps          # todo en "running" / "healthy"
 | API Gateway | http://localhost:8080 |
 | Panel web (mapa) | http://localhost:8081 |
 | Swagger UI (3 APIs) | http://localhost:8090 |
+| FCM simulado (mensajes recibidos) | http://localhost:8091/mensajes |
 | PostGIS (QGIS/DBeaver) | `localhost:5433`, usuario/clave `ubicacion` |
 
 Usuarios de desarrollo (los crea el seeder de api-usuarios):
@@ -50,6 +51,7 @@ Usuarios de desarrollo (los crea el seeder de api-usuarios):
 | `demo@colcatrufis.local` | `demo12345` | usuario |
 
 Si un puerto ya está ocupado en tu PC: `GATEWAY_PORT=9080 ADMIN_WEB_PORT=9081 docker compose up -d`.
+Para ver moverse los radio taxis de demostración: `docker compose --profile demo up -d`.
 
 ### Probar a mano
 
@@ -69,6 +71,14 @@ curl -s -X POST localhost:8080/api/notificaciones/suscripciones \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"linea":"252"}'
 docker compose exec api-ubicacion php artisan eventos:publicar-prueba 252
 curl -s localhost:8080/api/notificaciones -H "Authorization: Bearer $TOKEN"
+```
+
+Para ver también el push, registra un dispositivo antes de publicar el evento y consulta FCM simulado:
+
+```bash
+curl -s -X POST localhost:8080/api/notificaciones/dispositivos \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"token":"mi-dispositivo-de-prueba-123"}'
+curl -s localhost:8091/mensajes
 ```
 
 ### Tests
@@ -103,11 +113,15 @@ docker compose exec api-usuarios php artisan usuarios:migrar-monolito
 # Rutas: convierte los puntos de trufi_rutas en LineStrings PostGIS
 docker compose exec api-ubicacion php artisan ubicacion:migrar-monolito --dry-run
 docker compose exec api-ubicacion php artisan ubicacion:migrar-monolito
+# Radio taxis: importa la parada base de cada sindicato y retira los de demostración
+docker compose exec api-ubicacion php artisan ubicacion:migrar-radiotaxis --dry-run
+docker compose exec api-ubicacion php artisan ubicacion:migrar-radiotaxis
 ```
 
 ### Problemas comunes
 
 - **El Gateway no arranca:** espera a que `api-usuarios` esté *healthy*; genera `jwk.json` al iniciar.
+- **Ruta nueva del Gateway responde 404:** ejecuta `docker compose restart gateway`; lee su configuración al arrancar.
 - **Todos los tokens dejaron de valer:** se borró el volumen `jwt-keys` y se generaron claves nuevas.
   Vuelve a iniciar sesión.
 - **Mac con Apple Silicon:** la imagen de PostGIS es amd64 y corre emulada; el primer arranque es más lento.
@@ -139,10 +153,12 @@ Pruebas en un navegador real: `node scripts/browser-qa.mjs` (Node 22+ y Chrome).
 Copia limpia, con bases de datos desechables y caché Docker existente: `node scripts/clean-verify.mjs`.
 
 - [Plan y estado del Sprint 1](docs/sprint-1.md)
+- [Estado del Sprint 2](docs/sprint-2.md) · [verificación](docs/qa-sprint-2.md)
 - [Decisiones de arquitectura (ADR)](docs/adr/README.md)
 - Contratos OpenAPI: [usuarios](docs/openapi/usuarios.yaml) · [ubicación](docs/openapi/ubicacion.yaml) · [notificaciones](docs/openapi/notificaciones.yaml)
 - [Formato del evento `ruta.actualizada`](docs/eventos/ruta.actualizada.json)
 - [Pruebas de rendimiento](perf/README.md)
 
-Datos de rutas iniciales: © colaboradores de [OpenStreetMap](https://www.openstreetmap.org/copyright)
+Rutas y paradas: `node scripts/importar-rutas-osm.mjs` amplía la semilla con el criterio indicado en el script.
+Datos de rutas: © colaboradores de [OpenStreetMap](https://www.openstreetmap.org/copyright)
 (ODbL), relaciones de transporte mapeadas por Trufi Association.

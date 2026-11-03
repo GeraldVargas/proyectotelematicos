@@ -4,6 +4,9 @@ telematicosDocs/
 # macOS
 .DS_Store
 
+# Cuenta de servicio de Firebase (ver docs/adr/0005)
+secrets/
+
 # Claves JWT generadas localmente
 *.pem
 **/storage/keys/

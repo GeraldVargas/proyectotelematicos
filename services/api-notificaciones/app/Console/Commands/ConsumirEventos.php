@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\EnviadorPush;
 use App\Services\ProcesadorEventos;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
@@ -15,7 +16,7 @@ class ConsumirEventos extends Command
 
     private bool $seguir = true;
 
-    public function handle(ProcesadorEventos $procesador): int
+    public function handle(ProcesadorEventos $procesador, EnviadorPush $push): int
     {
         $cola = config('eventos.cola');
         $redis = Redis::connection(config('eventos.conexion_redis'));
@@ -27,15 +28,12 @@ class ConsumirEventos extends Command
             // BRPOP con timeout para poder atender SIGTERM
             $item = $redis->brpop([$cola], 5);
 
-            if (! $item) {
-                if ($this->option('una-vez')) {
-                    break;
-                }
-
-                continue;
+            if ($item) {
+                $this->procesar($procesador, $item[1]);
             }
 
-            $this->procesar($procesador, $item[1]);
+            // También sin eventos nuevos, para atender los reintentos cuando vencen.
+            $this->enviarPush($push);
 
             if ($this->option('una-vez')) {
                 break;
@@ -43,6 +41,20 @@ class ConsumirEventos extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function enviarPush(EnviadorPush $push): void
+    {
+        try {
+            $enviados = $push->enviarPendientes();
+
+            if ($enviados > 0) {
+                $this->line("✓ Push enviados: {$enviados}");
+            }
+        } catch (Throwable $e) {
+            report($e);
+            $this->error("✗ Push: {$e->getMessage()}");
+        }
     }
 
     private function procesar(ProcesadorEventos $procesador, string $json): void

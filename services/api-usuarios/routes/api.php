@@ -12,4 +12,7 @@ Route::post('/refresh', [AuthController::class, 'refresh']);
 // Protegidas
 Route::middleware(AutenticarJwt::class)->group(function () {
     Route::get('/perfil', [AuthController::class, 'perfil']);
+    Route::get('/perfil/{id}', [AuthController::class, 'perfilPorId'])->whereNumber('id');
+    Route::get('/lista', [AuthController::class, 'lista']);
+    Route::delete('/sesion', [AuthController::class, 'logout']);
 });

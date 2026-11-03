@@ -23,5 +23,5 @@ headers falsos de administrador.
 
 Limitaciones: el consumidor del ADR 0002 todavía usa BRPOP sin ACK. Un fallo del consumidor
 entre sacar y persistir un evento puede perderlo. Esta mejora asegura el registro y reintento
-del **productor**, sin declarar entrega garantizada de extremo a extremo. Redis Streams/ACK,
-FCM y una cola de fallidos quedan pendientes para completar el sprint 2.
+del **productor**, sin declarar entrega garantizada de extremo a extremo. Redis Streams/ACK y una
+cola de fallidos siguen pendientes. El push se resolvió en [ADR 0005](0005-push-fcm-y-radiotaxis.md).

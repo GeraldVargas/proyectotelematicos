@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Dispositivo;
+use App\Models\EnvioPush;
 use App\Models\Notificacion;
 use App\Models\Suscripcion;
 use Illuminate\Support\Facades\DB;
@@ -48,9 +50,12 @@ class ProcesadorEventos
     {
         $datos = $evento['datos'];
         $usuarios = Suscripcion::where('linea', $datos['linea'])->pluck('user_id');
+        $dispositivos = config('fcm.habilitado')
+            ? Dispositivo::whereIn('user_id', $usuarios)->get(['id', 'user_id'])->groupBy('user_id')
+            : collect();
 
         foreach ($usuarios as $userId) {
-            Notificacion::create([
+            $notificacion = Notificacion::create([
                 'user_id' => $userId,
                 'tipo' => $evento['tipo'],
                 'titulo' => "Cambio en la línea {$datos['linea']}",
@@ -58,6 +63,11 @@ class ProcesadorEventos
                 'datos' => $datos,
                 'evento_id' => $evento['id'],
             ]);
+
+            // En la misma transacción: el push no se pierde si el worker cae antes de enviarlo.
+            foreach ($dispositivos->get($userId, []) as $dispositivo) {
+                EnvioPush::create(['notificacion_id' => $notificacion->id, 'dispositivo_id' => $dispositivo->id]);
+            }
         }
 
         return $usuarios->count();

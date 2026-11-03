@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\JwtService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -53,6 +54,58 @@ class AuthController extends Controller
     public function perfil(Request $request): JsonResponse
     {
         return response()->json($request->user()->toPerfil());
+    }
+
+    // GET /api/usuarios/perfil/{id}: cada usuario ve el suyo; admin y encargado, cualquiera
+    public function perfilPorId(Request $request, int $id): JsonResponse
+    {
+        $actual = $request->user();
+
+        if ($actual->id !== $id && ! in_array($actual->rol, ['admin', 'encargado'], true)) {
+            return response()->json(['message' => 'No tiene permiso para ver este perfil'], 403);
+        }
+
+        $user = User::find($id);
+
+        if (! $user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        return response()->json($user->toPerfil());
+    }
+
+    // GET /api/usuarios/lista (solo admin)
+    public function lista(Request $request): JsonResponse
+    {
+        if ($request->user()->rol !== 'admin') {
+            return response()->json(['message' => 'Solo un administrador puede listar usuarios'], 403);
+        }
+
+        $datos = $request->validate([
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'por_pagina' => ['sometimes', 'integer', 'between:1,100'],
+        ]);
+
+        $usuarios = User::orderBy('id')
+            ->paginate($datos['por_pagina'] ?? 20)
+            ->through(fn (User $u) => $u->toPerfil());
+
+        return response()->json($usuarios);
+    }
+
+    // DELETE /api/usuarios/sesion: con refresh_token cierra ese dispositivo; sin él, todas las sesiones
+    public function logout(Request $request): Response
+    {
+        $datos = $request->validate([
+            'refresh_token' => ['sometimes', 'string'],
+        ]);
+
+        $request->user()->refreshTokens()
+            ->whereNull('revoked_at')
+            ->when($datos['refresh_token'] ?? null, fn ($q, $token) => $q->where('token_hash', hash('sha256', $token)))
+            ->update(['revoked_at' => now()]);
+
+        return response()->noContent();
     }
 
     // POST /api/usuarios/refresh

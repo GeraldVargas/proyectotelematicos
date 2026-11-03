@@ -14,6 +14,9 @@ class GatewayConfig {
 
   static const bool usarMocks = bool.fromEnvironment('USE_MOCKS');
 
+  /// Radio taxis: frecuencia con la que el mapa pide de nuevo sus posiciones.
+  static const Duration refrescoRadiotaxis = Duration(seconds: 30);
+
   static const Duration timeout = Duration(seconds: 20);
 
   /// Mapa base vectorial: el cliente lo pide directo al proveedor, sin pasar por el Gateway.

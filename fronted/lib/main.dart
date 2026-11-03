@@ -3,6 +3,8 @@ import 'package:colcatrufis/screens/splash_screen.dart';  // Asegúrate de impor
 import 'package:colcatrufis/screens/home_screen.dart';    // Asegúrate de importar la pantalla principal
 import 'package:colcatrufis/features/login/login_screen.dart';
 import 'package:colcatrufis/features/mapa/mapa_rutas_screen.dart';
+import 'package:colcatrufis/features/notificaciones/push_service.dart';
+import 'package:colcatrufis/features/notificaciones/suscripciones_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,6 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Colca Trufis',
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: PushService.mensajero,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -24,6 +27,7 @@ class MyApp extends StatelessWidget {
         // Arquitectura de microservicios (Sprint 1): login JWT + mapa vectorial vía Gateway
         '/login': (context) => const LoginScreen(),
         '/mapa': (context) => const MapaRutasScreen(),
+        '/suscripciones': (context) => const SuscripcionesScreen(),
       },
     );
   }

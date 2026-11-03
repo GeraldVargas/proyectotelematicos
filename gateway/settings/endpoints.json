@@ -10,15 +10,24 @@
     { "endpoint": "/api/usuarios/login", "method": "POST", "servicio": "usuarios", "publico": true },
     { "endpoint": "/api/usuarios/refresh", "method": "POST", "servicio": "usuarios", "publico": true },
     { "endpoint": "/api/usuarios/perfil", "method": "GET", "servicio": "usuarios" },
+    { "endpoint": "/api/usuarios/perfil/{id}", "method": "GET", "servicio": "usuarios" },
+    { "endpoint": "/api/usuarios/lista", "method": "GET", "servicio": "usuarios", "query": ["page", "por_pagina"] },
+    { "endpoint": "/api/usuarios/sesion", "method": "DELETE", "servicio": "usuarios" },
 
     { "endpoint": "/api/ubicacion/rutas", "method": "GET", "servicio": "ubicacion", "query": ["linea", "sindicato", "estado"] },
     { "endpoint": "/api/ubicacion/rutas/{id}", "method": "GET", "servicio": "ubicacion" },
     { "endpoint": "/api/ubicacion/rutas/{id}", "method": "PUT", "servicio": "ubicacion" },
     { "endpoint": "/api/ubicacion/paradas", "method": "GET", "servicio": "ubicacion", "query": ["ruta_id"] },
     { "endpoint": "/api/ubicacion/paradas/cercanas", "method": "GET", "servicio": "ubicacion", "query": ["lat", "lng", "radio", "limite"] },
+    { "endpoint": "/api/ubicacion/radiotaxis", "method": "GET", "servicio": "ubicacion" },
+    { "endpoint": "/api/ubicacion/radiotaxis/{id}/posicion", "method": "PUT", "servicio": "ubicacion" },
 
     { "endpoint": "/api/notificaciones", "method": "GET", "servicio": "notificaciones", "query": ["page", "por_pagina"] },
     { "endpoint": "/api/notificaciones/suscripciones", "method": "GET", "servicio": "notificaciones" },
-    { "endpoint": "/api/notificaciones/suscripciones", "method": "POST", "servicio": "notificaciones" }
+    { "endpoint": "/api/notificaciones/suscripciones", "method": "POST", "servicio": "notificaciones" },
+    { "endpoint": "/api/notificaciones/suscripciones/{lineaId}", "method": "DELETE", "servicio": "notificaciones" },
+    { "endpoint": "/api/notificaciones/historial", "method": "GET", "servicio": "notificaciones", "query": ["desde", "hasta", "page", "por_pagina"] },
+    { "endpoint": "/api/notificaciones/dispositivos", "method": "POST", "servicio": "notificaciones" },
+    { "endpoint": "/api/notificaciones/dispositivos", "method": "DELETE", "servicio": "notificaciones" }
   ]
 }

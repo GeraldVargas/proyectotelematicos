@@ -17,7 +17,7 @@ class AdministradorDelGateway
             return response()->json(['message' => 'No autenticado'], 401);
         }
         if ($request->header('X-User-Rol') !== 'admin') {
-            return response()->json(['message' => 'Solo un administrador puede editar rutas'], 403);
+            return response()->json(['message' => 'Esta acción requiere rol de administrador'], 403);
         }
 
         return $next($request);

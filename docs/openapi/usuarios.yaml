@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ColcaTrufis — API de Usuarios
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Registro, login y emisión de JWT RS256 (claims `sub`, `rol`, `exp`).
     Todas las rutas se consumen a través del API Gateway.
@@ -101,6 +101,82 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Usuario' }
         '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/usuarios/perfil/{id}:
+    get:
+      operationId: obtenerPerfilPorId
+      tags: [Autenticación]
+      summary: Perfil por ID
+      description: Cada usuario puede consultar el suyo; `admin` y `encargado`, el de cualquiera.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Perfil
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '403':
+          description: Perfil ajeno sin el rol necesario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/usuarios/lista:
+    get:
+      operationId: listarUsuarios
+      tags: [Autenticación]
+      summary: Lista paginada de usuarios (solo `admin`)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: por_pagina, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200':
+          description: Página de usuarios (formato de paginación de Laravel)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_page: { type: integer, example: 1 }
+                  per_page: { type: integer, example: 20 }
+                  total: { type: integer, example: 2 }
+                  last_page: { type: integer, example: 1 }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '403':
+          description: El usuario autenticado no tiene rol admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/Validacion' }
+  /api/usuarios/sesion:
+    delete:
+      operationId: cerrarSesion
+      tags: [Autenticación]
+      summary: Cerrar sesión
+      description: |
+        Revoca en la BD el `refresh_token` indicado. Sin cuerpo cierra todas las sesiones del usuario.
+        El access token es un JWT sin estado: sigue siendo válido hasta su `exp` (1 hora como máximo),
+        por lo que el cliente debe borrarlo.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '204': { description: Sesión cerrada }
+        '401': { $ref: '#/components/responses/NoAutorizado' }
+        '422': { $ref: '#/components/responses/Validacion' }
 security:
   - bearerAuth: []
 components:

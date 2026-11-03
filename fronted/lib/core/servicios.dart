@@ -4,6 +4,8 @@ import 'network/gateway_client.dart';
 import 'network/gateway_config.dart';
 import 'network/mock_gateway.dart';
 import '../features/mapa/ubicacion_service.dart';
+import '../features/notificaciones/notificaciones_service.dart';
+import '../features/notificaciones/push_service.dart';
 
 /// Instancias compartidas de la capa de red nueva (Gateway + JWT).
 class Servicios {
@@ -13,4 +15,6 @@ class Servicios {
 
   static final AuthService auth = AuthService(gateway);
   static final UbicacionService ubicacion = UbicacionService(gateway);
+  static final NotificacionesService notificaciones = NotificacionesService(gateway);
+  static final PushService push = PushService(notificaciones);
 }

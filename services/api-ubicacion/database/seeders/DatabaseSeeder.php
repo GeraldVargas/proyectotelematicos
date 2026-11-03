@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Radiotaxi;
 use App\Models\Ruta;
 use App\Services\CargadorRutas;
 use Illuminate\Database\Seeder;
@@ -43,6 +44,27 @@ class DatabaseSeeder extends Seeder
                     'osm_node_id' => $s['osm_id'],
                 ], $p['paradas']),
             );
+        }
+
+        $this->radiotaxisDeDemostracion();
+    }
+
+    /**
+     * No hay datos reales de radio taxis sin la BD del monolito. Estos son ficticios, van marcados
+     * con origen=demo y solo se crean si la tabla está vacía (ubicacion:migrar-radiotaxis los retira).
+     */
+    private function radiotaxisDeDemostracion(): void
+    {
+        if (Radiotaxi::exists()) {
+            return;
+        }
+
+        foreach ([[-66.2405, -17.3895], [-66.2510, -17.3930], [-66.2300, -17.3850], [-66.2450, -17.3990]] as $i => [$lng, $lat]) {
+            Radiotaxi::create([
+                'nombre' => 'Radio Taxi Demo '.($i + 1),
+                'sindicato' => 'Datos de demostración',
+                'origen' => 'demo',
+            ])->moverA($lng, $lat);
         }
     }
 }

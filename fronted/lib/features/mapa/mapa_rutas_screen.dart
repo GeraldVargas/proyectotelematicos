@@ -49,14 +49,20 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
 
   Future<void> _alCargarEstilo() async {
     final mapa = _mapa;
-    if (mapa == null) return;
+    if (mapa == null || !mounted) return;
     setState(() {
       _cargando = true;
       _error = null;
     });
     try {
-      final rutas = await Servicios.ubicacion.rutas();
-      final paradas = await Servicios.ubicacion.paradas();
+      // Son fuentes independientes: cargarlas juntas reduce el tiempo de apertura del mapa.
+      final capas = await Future.wait<Map<String, dynamic>>([
+        Servicios.ubicacion.rutas(),
+        Servicios.ubicacion.paradas(),
+      ]);
+      if (!mounted || _mapa != mapa) return;
+      final rutas = capas[0];
+      final paradas = capas[1];
 
       await mapa.addGeoJsonSource('rutas', rutas);
       await mapa.addGeoJsonSource('paradas', paradas);
@@ -88,15 +94,16 @@ class _MapaRutasScreenState extends State<MapaRutasScreen> {
       );
 
       await _iniciarRadiotaxis(mapa);
+      if (!mounted || _mapa != mapa) return;
 
       final features = (rutas['features'] as List).cast<Map>();
       _rutasPorId
         ..clear()
         ..addEntries(features.map((f) => MapEntry('${f['id']}', Map<String, dynamic>.from(f['properties'] as Map))));
       await _encuadrar(features);
-      setState(() => _totalRutas = features.length);
+      if (mounted) setState(() => _totalRutas = features.length);
     } on ApiException catch (e) {
-      if (e.statusCode != 401) setState(() => _error = e.mensaje);
+      if (e.statusCode != 401 && mounted) setState(() => _error = e.mensaje);
     } finally {
       if (mounted) setState(() => _cargando = false);
     }

@@ -4,11 +4,14 @@
 hacia los 3 servicios. La API de Ubicación sirve rutas reales en GeoJSON desde PostGIS, dibujadas en
 un mapa vectorial en Flutter. Queda medido el rendimiento actual del monolito como línea base.
 
-## Verificación del 27/10/2026
+## Actualización del 03/11/2026
 
-El estado técnico actualizado, resultados y pendientes externos están en
-[QA del sprint 1](qa-sprint-1.md). El avance implementado se detalla en [Sprint 2](sprint-2.md).
-Los estados originales de abajo describen el plan; no sustituyen esa evidencia de ejecución.
+El estado actual y las indicaciones para marcar tareas están en
+[avance del 03/11](avance-sprints-2026-11-03.md). La evidencia del 27/10 se conserva en
+[QA del sprint 1](qa-sprint-1.md), junto a una nota de las nuevas comprobaciones.
+El conjunto actual pasó 71 tests de APIs, 20 tests Flutter, 59 comprobaciones de PowerShell
+en dos ejecuciones y 23 comprobaciones en Chrome. Estos resultados abarcan ambos sprints;
+no representan 71 casos exclusivos del sprint 1 ni cierran sus pendientes externos.
 
 ## Acuerdos del día 1–2
 
@@ -26,8 +29,10 @@ Los estados originales de abajo describen el plan; no sustituyen esa evidencia d
 - [x] `docker-compose.yml`: gateway, 3 APIs + sus BD, PostGIS, Redis, worker, Swagger UI, panel
 - [x] Enrutamiento y validación JWT con la clave pública (JWK); login/registro/refresh públicos
 - [x] Monorepo + ramas ([`adr/0003`](adr/0003-repositorio-y-ramas.md)) + CI (`.github/workflows/ci.yml`)
+- [x] CI remoto de la base `e9e9bf9`: [siete jobs aprobados](https://github.com/GeraldVargas/proyectotelematicos/actions/runs/41564765479), creada el 02/11 a las 22:13 (Bolivia)
 - DoD: sin token → 401 ✔︎ · con token llega al servicio correcto ✔︎ (`scripts/smoke-test.sh`) ·
-  levantar con el README ⏳ *(medir con alguien que no lo haya hecho)* · CI en cada PR ⏳ *(activar protección de `main`)*
+  levantar con el README ⏳ *(medir con alguien que no lo haya hecho)* · protección de `main` ⏳
+  *(requiere administrador)* · publicación y CI de los cambios locales del 03/11 ⏳
 
 ### Fernanda — API de Usuarios
 - [x] Contrato `usuarios.yaml`: `POST /registro`, `POST /login`, `GET /perfil`, `POST /refresh`
@@ -38,10 +43,10 @@ Los estados originales de abajo describen el plan; no sustituyen esa evidencia d
 
 ### Julio — API de Ubicación (GIS)
 - [x] Esquema PostGIS: `rutas` (LineString), `paradas` (Point), `ruta_parada`; EPSG:4326, índices GiST
-- [x] 4 rutas reales cargadas (líneas 201, 252, 270 y 290) con 22 paradas, desde OpenStreetMap
+- [x] Semilla inicial de 4 rutas OSM y 22 paradas; ampliada a **22 rutas y 135 paradas** en el sprint 2
 - [x] `GET /rutas` (FeatureCollection, filtros `linea`, `sindicato`, `estado`), `GET /rutas/{id}`, `GET /paradas`
 - [x] Comando `ubicacion:migrar-monolito` para convertir `trufi_rutas` en LineStrings
-- DoD: GeoJSON válido ✔︎ (tests + verificar en geojson.io) · responde por el Gateway con token ✔︎ · tests ✔︎ ·
+- DoD: GeoJSON válido ✔︎ (tests y PostGIS; revisión en geojson.io pendiente) · responde por el Gateway con token ✔︎ · tests ✔︎ ·
   revisar trazados sobre el mapa con el municipio ⏳
 - Fuera del sprint: `paradas/cercanas`, `radiotaxis`, `PUT /rutas/{id}`
 
@@ -58,21 +63,23 @@ Los estados originales de abajo describen el plan; no sustituyen esa evidencia d
 - [x] Mapa con `maplibre_gl` + OpenFreeMap centrado en Colcapirhua; rutas GeoJSON con un color por línea;
   al tocar una ruta muestra número y sindicato
 - [x] Mocks del contrato (`--dart-define=USE_MOCKS=true`) y tests de la capa de red
-- DoD: probar en un Android físico ⏳ · `flutter pub get` + compatibilidad de `maplibre_gl` ⏳ ·
+- DoD: `flutter pub get`, 20 tests y compilaciones web/APK ARM64 ✔︎ · probar mapa y compatibilidad en Android físico ⏳ ·
   regresión manual de las pantallas existentes ⏳
 
 ### Gerald — Panel web + QA/Rendimiento
 - [x] Scripts k6 (`perf/`) para login, rutas y radio taxis; el mismo escenario sirve para el Sprint 2
 - [x] Panel `admin-web/` con login JWT del Gateway (solo `admin`/`encargado`) y mapa MapLibre GL JS
+- [x] Línea base k6 del monolito con esquema real y semilla OSM: [resultados previos](../perf/README.md); no repetida hoy
 - [ ] **Correr la línea base** contra el monolito con datos reales y llenar `perf/README.md`
 - [x] Ejecutar las comprobaciones locales automatizables de la checklist; ver [evidencias y pendientes externos](qa-sprint-1.md)
 
-## Checklist de pruebas manuales
+## Checklist de comprobaciones automáticas y manuales
 
-- [x] Copia limpia de fuentes y BDs nuevas: 97.99 s con caché Docker; clon remoto/descarga fría aún pendientes
-- [x] `scripts/smoke-test.ps1 -Sprint2`: 40 comprobaciones correctas (versión Windows); sintaxis shell original validada
+- [x] Copia limpia del 03/11: 80,52 s con caché Docker, bases nuevas, 71 tests y 59 comprobaciones; clon remoto/descarga fría pendientes
+- [x] Arranque del 03/11 con construcción de imágenes usando caché y volúmenes existentes conservados
+- [x] `scripts/smoke-test.ps1 -Sprint2`: 59 comprobaciones correctas en dos ejecuciones del 03/11 (Windows)
 - [x] Swagger UI (:8090) muestra las 3 APIs y "Try it out" funciona con un token (Chrome)
-- [x] Panel (:8081): login admin → mapa con 4 rutas y paradas; clic en ruta/parada muestra datos (Chrome)
+- [x] Panel (:8081): login admin → mapa con 22 rutas y 135 paradas; clic en ruta/parada muestra datos (Chrome)
 - [x] Panel: un usuario `usuario` (demo) **no** entra al panel (Chrome)
 - [x] Panel: desmarcar una ruta la oculta; "Mostrar paradas" alterna la capa (Chrome)
 - [ ] Respuesta de `/api/ubicacion/rutas` pegada en geojson.io: trazados sobre las calles correctas

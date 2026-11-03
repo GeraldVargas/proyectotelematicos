@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Services\JwtService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -114,6 +115,26 @@ class AuthTest extends TestCase
         $this->travel(config('jwt.refresh_ttl') + 60)->seconds();
 
         $this->postJson('/api/usuarios/refresh', ['refresh_token' => $refresh])->assertUnauthorized();
+    }
+
+    public function test_dos_solicitudes_que_leyeron_el_mismo_refresh_solo_emiten_un_par(): void
+    {
+        $user = User::factory()->create(['password' => 'secreto123']);
+        $jwt = app(JwtService::class);
+        $refresh = $jwt->emitirPar($user)['refresh_token'];
+        $lecturaAnterior = $jwt->buscarRefresh($refresh);
+
+        // Ambas solicitudes ya leyeron el token vigente; la segunda conserva esa lectura
+        // aunque la primera lo haya consumido en la base de datos.
+        $jwtConLecturaAnterior = Mockery::mock($jwt)->makePartial();
+        $jwtConLecturaAnterior->shouldReceive('buscarRefresh')->with($refresh)->twice()->andReturn($lecturaAnterior);
+        $this->app->instance(JwtService::class, $jwtConLecturaAnterior);
+
+        $this->postJson('/api/usuarios/refresh', ['refresh_token' => $refresh])->assertOk();
+        $this->postJson('/api/usuarios/refresh', ['refresh_token' => $refresh])->assertUnauthorized();
+
+        $this->assertSame(1, $user->refreshTokens()->whereNull('revoked_at')->count());
+        $this->assertDatabaseCount('refresh_tokens', 2);
     }
 
     public function test_logout_revoca_el_refresh_token_de_la_sesion(): void

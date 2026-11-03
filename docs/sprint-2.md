@@ -1,6 +1,8 @@
-# Sprint 2 — estado al 02/11/2026
+# Sprint 2 — estado al 03/11/2026
 
-Todo lo que depende solo de código y de Docker está implementado y verificado ([evidencia](qa-sprint-2.md)).
+Las APIs, el panel y el flujo hasta FCM simulado están implementados y verificados ([evidencia](qa-sprint-2.md)).
+Flutter resolvió dependencias, aprobó 20 pruebas y compiló para web y Android ARM64 debug. El análisis no encontró errores;
+mantiene advertencias históricas. Ver [qué marcar en el informe y cómo demostrarlo](avance-sprints-2026-11-03.md).
 **El sprint no se declara terminado:** faltan los puntos que requieren un teléfono, un proyecto de
 Firebase, datos o decisiones de terceros y las firmas del equipo.
 
@@ -10,15 +12,15 @@ Leyenda: ✅ hecho y verificado · 🟡 implementado, verificación pendiente ·
 
 | Responsable | Tarea | Estado | Nota |
 |---|---|---|---|
-| Salvador | `composer.lock` y Dockerfiles | ✅ | Construcción en frío de las imágenes: 7 min 9 s en Colima |
-| Salvador | Smoke test completo | ✅ | `scripts/smoke-test.sh` todo en verde, dos veces seguidas |
+| Salvador | `composer.lock` y Dockerfiles | ✅ | Construyen en Windows con PHP 8.3.13; caché y volúmenes conservados. Evidencia anterior en Colima: 7 min 9 s |
+| Salvador | Smoke test completo | ✅ | PowerShell en Windows: 59 comprobaciones, también tras reconstruir los fixes |
 | Salvador | Protección de `main` | ⏳ | Requiere la cuenta de Gerald, dueño del repositorio: [pasos](proteccion-main.md) |
 | Salvador | Contenedor FCM mock | ✅ | `fcm-mock`, sin credenciales |
-| Salvador | CI: tests, cobertura y k6 | 🟡 | `ci.yml` publica cobertura y k6 en el resumen del PR; se verá al ejecutarse en GitHub |
+| Salvador | CI: tests, cobertura y k6 | ✅ | [7 jobs aprobados para `e9e9bf9`](https://github.com/GeraldVargas/proyectotelematicos/actions/runs/41564765479). Los nuevos fixes locales aún requieren publicación y CI |
 | Fernanda | Migración real de usuarios | ⏳ | Requiere la BD del monolito; comando probado con BD simulada |
 | Fernanda | `DELETE /sesion`, `GET /perfil/{id}` | ✅ | |
 | Fernanda | `GET /lista` (solo admin) | ✅ | |
-| Fernanda | 15+ tests | ✅ | 21 casos |
+| Fernanda | 15+ tests | ✅ | 22 casos, incluida rotación atómica del refresh; dos solicitudes simultáneas por MySQL: 200/401 |
 | Julio | Tests contra PostGIS real | ✅ | 25 casos |
 | Julio | Captura de trazados | ✅ | [Panel](qa/artifacts/panel-mapa.png). Falta la verificación manual en geojson.io |
 | Julio | `paradas/cercanas`, `PUT rutas/{id}` | ✅ | Ya estaban hechas |
@@ -30,11 +32,11 @@ Leyenda: ✅ hecho y verificado · 🟡 implementado, verificación pendiente ·
 | Eleonor | `POST`/`DELETE` suscripciones | ✅ | |
 | Eleonor | Integración FCM | 🟡 | Probado hasta `fcm-mock`; la entrega real requiere Firebase |
 | Eleonor | `GET /historial` | ✅ | |
-| Eleonor | 10+ tests | ✅ | 23 casos |
-| Luis | Prueba en Android físico y regresión | ⏳ | Requiere Flutter y un teléfono |
-| Luis | Capa de radio taxis (30 s) | 🟡 | Código escrito, **sin compilar** |
-| Luis | Push FCM en la app | 🟡 | Código escrito, **sin compilar** y sin Firebase |
-| Luis | Pantalla de suscripciones | 🟡 | Código escrito, **sin compilar** |
+| Eleonor | 10+ tests | ✅ | 24 casos; un 404 genérico de FCM conserva el dispositivo y reintenta |
+| Luis | Prueba en Android físico y regresión | ⏳ | Flutter instalado y funcionando; falta teléfono y backend histórico para la regresión completa |
+| Luis | Capa de radio taxis (30 s) | 🟡 | Compila en web y Android ARM64, con pruebas de servicio; falta validación física |
+| Luis | Push FCM en la app | 🟡 | Dependencias y APK aprobados; entrega real pendiente de Firebase y teléfono |
+| Luis | Pantalla de suscripciones | 🟡 | Compila en web y Android ARM64; suscribir/desuscribir probado en servicios y mocks; falta revisión física |
 | Luis | `fronted/README.md` | ✅ | |
 | Gerald | Línea base k6 del monolito | ✅ | Reproducible, con datos OSM y no de producción: [resultados](../perf/README.md) |
 | Gerald | Radio taxis en el panel | ✅ | Actualización cada 30 s |
@@ -46,8 +48,8 @@ Leyenda: ✅ hecho y verificado · 🟡 implementado, verificación pendiente ·
 
 | Criterio | Estado |
 |---|---|
-| Todos los endpoints del informe implementados y en Swagger | ✅ |
-| `docker compose up -d --build` desde cero sin errores | ✅ |
+| Endpoints previstos de los sprints 1 y 2 implementados y en Swagger | ✅ |
+| `docker compose up -d --build` con fuentes limpias y bases nuevas | ✅ 80,52 s con caché; no es descarga fría ni clon remoto |
 | La app funciona en Android físico con rutas, paradas y radio taxis | ⏳ |
 | El push llega al dispositivo al editar una ruta | ⏳ Llega hasta FCM simulado |
 | Línea base k6 documentada y reproducible | ✅ |
@@ -55,8 +57,8 @@ Leyenda: ✅ hecho y verificado · 🟡 implementado, verificación pendiente ·
 
 ## Qué debe hacer cada quien
 
-1. **Luis:** `cd fronted && flutter pub get && flutter test`, confirmar `pubspec.lock` y probar en Android.
-   El código Dart solo pasó una revisión de sintaxis: la primera compilación puede pedir ajustes.
+1. **Luis:** probar en Android físico siguiendo [`fronted/README.md`](../fronted/README.md).
+   `flutter pub get`, las 20 pruebas y las compilaciones web/APK ARM64 ya pasaron en esta PC; el lock está actualizado.
 2. **Eleonor y Luis:** crear el proyecto de Firebase y seguir [`fronted/README.md`](../fronted/README.md) y el ADR 0005.
 3. **Fernanda y Julio:** conseguir un respaldo de la BD del monolito para `usuarios:migrar-monolito`,
    `ubicacion:migrar-monolito` y `ubicacion:migrar-radiotaxis`.

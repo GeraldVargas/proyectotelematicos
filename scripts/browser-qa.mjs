@@ -66,6 +66,26 @@ async function login(email, password) {
     form.requestSubmit();
   })()`);
 }
+async function swaggerGet(contract, endpoint, expected, capture) {
+  await evaluate(`(() => {
+    const select = document.querySelector('.topbar select');
+    select.value = [...select.options].find(o => o.value.endsWith(${JSON.stringify(contract + '.yaml')})).value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await until(() => evaluate(`!![...document.querySelectorAll('.opblock')].find(b => b.querySelector('.opblock-summary-path')?.textContent.trim() === ${JSON.stringify(endpoint)} && b.querySelector('.opblock-summary-method')?.textContent === 'GET')`), `contrato ${contract}: ${endpoint}`);
+  await evaluate(`(() => {
+    ui.preauthorizeApiKey('bearerAuth', window.__qaAdminToken);
+    window.__qaOperation = () => [...document.querySelectorAll('.opblock')].find(b => b.querySelector('.opblock-summary-path')?.textContent.trim() === ${JSON.stringify(endpoint)} && b.querySelector('.opblock-summary-method')?.textContent === 'GET');
+    __qaOperation().querySelector('.opblock-summary-control').click();
+  })()`);
+  await until(() => evaluate(`!!__qaOperation()?.querySelector('.try-out__btn')`), 'Try it out');
+  await evaluate(`__qaOperation().querySelector('.try-out__btn').click()`);
+  await until(() => evaluate(`!!__qaOperation().querySelector('.execute')`), 'botón Execute');
+  await evaluate(`__qaOperation().querySelector('.execute').click()`);
+  await until(() => evaluate(`[...__qaOperation().querySelectorAll('.live-responses-table .response-col_status')].some(c => c.textContent.trim().startsWith('200'))`), `respuesta Swagger 200: ${endpoint}`);
+  check(await evaluate(`__qaOperation().querySelector('.live-responses-table').textContent.includes(${JSON.stringify(expected)})`), `Swagger Try it out ejecuta ${endpoint} con JWT y devuelve ${expected}`);
+  await screenshot(capture);
+}
 try {
   const portFile = path.join(profile, 'DevToolsActivePort');
   const port = await until(() => existsSync(portFile) && readFileSync(portFile, 'utf8').split('\n')[0], 'inicio de Chrome', 20000);
@@ -161,22 +181,15 @@ try {
   await send('Page.navigate', { url: process.env.SWAGGER_URL || 'http://localhost:8090' });
   await until(() => evaluate(`document.querySelector('.topbar select')?.options.length === 3 && !!window.ui`), 'Swagger UI con tres contratos');
   check(true, 'Swagger UI muestra los tres servicios');
-  await evaluate(`(() => { const select = document.querySelector('.topbar select'); select.value = [...select.options].find(o => o.textContent.includes('Ubicaci')).value; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
-  await until(() => evaluate(`!![...document.querySelectorAll('.opblock')].find(b => b.querySelector('.opblock-summary-path')?.textContent.trim() === '/api/ubicacion/rutas' && b.querySelector('.opblock-summary-method')?.textContent === 'GET')`), 'contrato de Ubicación');
   const gateway = process.env.GATEWAY_URL || 'http://localhost:8080';
   await evaluate(`(async () => {
     const response = await fetch(${JSON.stringify(gateway + '/api/usuarios/login')}, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email:'admin@colcatrufis.local',password:'admin12345'}) });
-    const session = await response.json(); ui.preauthorizeApiKey('bearerAuth', session.access_token);
-    window.__qaOperation = () => [...document.querySelectorAll('.opblock')].find(b => b.querySelector('.opblock-summary-path')?.textContent.trim() === '/api/ubicacion/rutas' && b.querySelector('.opblock-summary-method')?.textContent === 'GET');
-    __qaOperation().querySelector('.opblock-summary-control').click();
+    const session = await response.json(); window.__qaAdminToken = session.access_token;
   })()`);
-  await until(() => evaluate(`!!__qaOperation()?.querySelector('.try-out__btn')`), 'Try it out');
-  await evaluate(`__qaOperation().querySelector('.try-out__btn').click()`);
-  await until(() => evaluate(`!!__qaOperation().querySelector('.execute')`), 'botón Execute');
-  await evaluate(`__qaOperation().querySelector('.execute').click()`);
-  await until(() => evaluate(`[...__qaOperation().querySelectorAll('.live-responses-table .response-col_status')].some(c => c.textContent.trim().startsWith('200'))`), 'respuesta Swagger 200');
-  check(await evaluate(`__qaOperation().querySelector('.live-responses-table').textContent.includes('FeatureCollection')`), 'Swagger Try it out ejecuta GET de rutas con JWT y devuelve GeoJSON');
-  await screenshot('swagger-rutas.png');
+  await swaggerGet('ubicacion', '/api/ubicacion/rutas', 'FeatureCollection', 'swagger-rutas.png');
+  await swaggerGet('ubicacion', '/api/ubicacion/radiotaxis', 'FeatureCollection', 'swagger-radiotaxis.png');
+  await swaggerGet('usuarios', '/api/usuarios/lista', 'admin@colcatrufis.local', 'swagger-usuarios.png');
+  await swaggerGet('notificaciones', '/api/notificaciones/historial', 'current_page', 'swagger-historial.png');
   report.status = 'passed';
 } catch (error) {
   report.status = 'failed';

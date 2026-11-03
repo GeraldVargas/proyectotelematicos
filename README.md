@@ -129,6 +129,20 @@ docker compose exec api-ubicacion php artisan ubicacion:migrar-radiotaxis
 
 ## Documentación
 
+### Avance verificado en Windows — 03/11/2026
+
+Las tres APIs aprobaron **71 pruebas**, Flutter **20**, la integración por Gateway **59** y el
+panel/Swagger en Chrome **23**. Flutter resolvió las dependencias de Firebase y compiló para web y Android ARM64 debug.
+Se corrigieron refresh concurrente, un error de retirada de dispositivos FCM y logout móvil al
+vencer la sesión. No se importaron datos reales del monolito.
+La copia de fuentes limpias y bases nuevas arrancó en **80,52 s con caché Docker existente**;
+sus 71 tests y 59 comprobaciones también pasaron sin alterar la semilla de desarrollo.
+
+Ver [qué marcar en el informe, evidencias y pasos para demostrarlo](docs/avance-sprints-2026-11-03.md).
+El [CI remoto del código base](https://github.com/GeraldVargas/proyectotelematicos/actions/runs/41564765479)
+aprobó sus siete trabajos; los cambios locales de hoy requieren su propia ejecución tras publicarlos.
+Firebase real, Android físico, revisión municipal, firmas y protección de `main` siguen pendientes.
+
 ### Verificación y avance local (27/10/2026)
 
 En Windows, desde la raíz y con Docker Desktop abierto:

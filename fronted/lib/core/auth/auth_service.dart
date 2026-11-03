@@ -45,9 +45,16 @@ class AuthService {
     try {
       final refresh = await _client.tokens.leerRefreshToken();
       await _client.delete('/api/usuarios/sesion', cuerpo: refresh == null ? null : {'refresh_token': refresh});
+      // Un access token vencido puede haber renovado la sesión durante ese DELETE.
+      // Revocar también el refresh nuevo antes de descartar las credenciales locales.
+      final refreshActual = await _client.tokens.leerRefreshToken();
+      if (refreshActual != null && refreshActual != refresh) {
+        await _client.delete('/api/usuarios/sesion', cuerpo: {'refresh_token': refreshActual});
+      }
     } on ApiException {
       // El refresh token expirará solo
+    } finally {
+      await _client.tokens.borrar();
     }
-    await _client.tokens.borrar();
   }
 }

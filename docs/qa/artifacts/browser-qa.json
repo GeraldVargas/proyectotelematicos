@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-11-03T00:57:28.858Z",
+  "fecha": "2026-11-03T21:07:49.438Z",
   "panel": "http://localhost:8081",
   "checks": [
     "Administrador ve mapa y al menos cuatro rutas",
@@ -21,7 +21,10 @@
     "Salir del panel revoca el refresh token en el servidor",
     "El rol usuario no entra al panel ni conserva sesión administrativa",
     "Swagger UI muestra los tres servicios",
-    "Swagger Try it out ejecuta GET de rutas con JWT y devuelve GeoJSON"
+    "Swagger Try it out ejecuta /api/ubicacion/rutas con JWT y devuelve FeatureCollection",
+    "Swagger Try it out ejecuta /api/ubicacion/radiotaxis con JWT y devuelve FeatureCollection",
+    "Swagger Try it out ejecuta /api/usuarios/lista con JWT y devuelve admin@colcatrufis.local",
+    "Swagger Try it out ejecuta /api/notificaciones/historial con JWT y devuelve current_page"
   ],
   "status": "passed"
 }

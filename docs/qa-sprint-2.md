@@ -1,6 +1,43 @@
-# Verificación del sprint 2 — 02/11/2026
+# Verificación del sprint 2 — actualizada al 03/11/2026
 
-## Pruebas automáticas ejecutadas
+## Comprobación del 03/11/2026 en Windows
+
+Docker Desktop se inició y se reconstruyeron las imágenes, conservando los volúmenes del entorno
+principal. No se migraron datos reales. [Guía para marcar las tablas del informe](avance-sprints-2026-11-03.md).
+
+| Comprobación | Resultado actual |
+|---|---|
+| Usuarios / Ubicación / Notificaciones | **22 / 25 / 24 casos aprobados**, 71 en total |
+| Aislamiento | Usuarios/Notificaciones: SQLite en memoria; Ubicación: `ubicacion_test` en PostGIS |
+| Copia limpia sin dependencias, bases nuevas y proyecto Docker aislado | **80,52 s de arranque con caché existente**, 71 tests y 59 comprobaciones aprobados; usuarios de semilla conservados y limpieza correcta: [JSON](qa/artifacts/clean-verify.json) |
+| PowerShell `scripts/smoke-test.ps1 -Sprint2` | **59 comprobaciones**; ejecución final tras reconstruir los cambios |
+| Chrome `node scripts/browser-qa.mjs` | **23 comprobaciones**; [JSON](qa/artifacts/browser-qa.json) |
+| Swagger: «Try it out» con JWT | Rutas, radio taxis, lista de usuarios e historial devuelven 200 |
+| Refresh simultáneo por Gateway y MySQL | Solo una solicitud renueva: 200/401. Logout revoca el nuevo refresh |
+| PostGIS | 22 rutas, 135 paradas, 0 geometrías inválidas |
+| Flutter | `pub get` correcto, **20 pruebas aprobadas**, compilaciones web release y APK debug Android ARM64 aprobadas |
+| Análisis Flutter completo | 0 errores, 11 warnings históricos en `home_screen.dart` y 202 avisos informativos; no se presenta como lint limpio |
+| CI remoto | [7 jobs aprobados para el código base `e9e9bf9`](https://github.com/GeraldVargas/proyectotelematicos/actions/runs/41564765479); comprobado mediante GitHub CLI, solo lectura |
+
+La ejecución remota corresponde al mismo commit que el `HEAD` local antes de esta revisión.
+Pasaron tests/lint de las tres APIs, contratos, sintaxis del panel, Flutter e integración Docker/k6.
+Los fixes y la documentación de hoy aún no están publicados ni cubiertos por ese resultado remoto.
+
+Se corrigieron refresh concurrente, retirada de dispositivos por 404 genérico, logout móvil con
+rotación durante el cierre y actualización de la pantalla de login después de salir de ella.
+Se amplió la prueba de Swagger y se aisló el puerto FCM del script de verificación limpia.
+
+Capturas actuales: [mapa](qa/artifacts/panel-mapa.png), [radio taxis](qa/artifacts/panel-radiotaxis.png),
+[usuarios](qa/artifacts/panel-usuarios.png), [edición](qa/artifacts/panel-ruta-guardada.png),
+[Swagger Usuarios](qa/artifacts/swagger-usuarios.png), [Swagger radio taxis](qa/artifacts/swagger-radiotaxis.png)
+y [Swagger historial](qa/artifacts/swagger-historial.png).
+
+El APK se generó con Gateway `http://10.0.2.2:8080` para emulador ARM64, sin Firebase configurado.
+Está en `fronted/build/app/outputs/flutter-apk/app-debug.apk` (127 514 745 bytes).
+Las compilaciones y las pruebas de servicios no sustituyen Android físico ni Firebase real.
+La checklist manual al final sigue reservada para quien ejecute y firme esos pasos.
+
+## Evidencia anterior — 02/11/2026
 
 Equipo: Apple M4, 16 GB, macOS 26.4.1, Docker en Colima (4 CPU, 6 GB). Entorno reconstruido con `docker compose down -v` y bases vacías.
 
@@ -23,14 +60,14 @@ Capturas: [mapa con 22 rutas](qa/artifacts/panel-mapa.png), [radio taxis](qa/art
 [usuarios](qa/artifacts/panel-usuarios.png), [guardado de ruta](qa/artifacts/panel-ruta-guardada.png),
 [Swagger](qa/artifacts/swagger-rutas.png).
 
-## No ejecutado
+## Pendientes registrados el 02/11/2026 y actualización
 
 | Qué | Por qué | Quién |
 |---|---|---|
-| `flutter analyze`, `flutter test`, compilación y Android físico | Flutter no está instalado en este equipo. El Dart solo pasó el analizador de sintaxis de `dart format` | Luis |
+| Android físico y regresión | En Windows ya se ejecutaron `pub get`, análisis, 20 tests y compilaciones web/APK ARM64; sigue pendiente la prueba en teléfono | Luis |
 | Push en un teléfono y contra Google | Falta el proyecto de Firebase | Eleonor y Luis |
-| `scripts/smoke-test.ps1 -Sprint2` | PowerShell no está disponible en este equipo; se ejecutará en el CI | CI |
-| Workflow de GitHub Actions | Los cambios no están publicados; solo se validó su sintaxis YAML | Salvador |
+| `scripts/smoke-test.ps1 -Sprint2` | **Resuelto en Windows: 59 comprobaciones**; falta confirmar ejecución remota en CI | CI |
+| Workflow de GitHub Actions | **Resuelto para la base `e9e9bf9`: 7 jobs aprobados**. Los cambios locales del 03/11 necesitan nueva publicación y ejecución | Salvador |
 | Migraciones reales desde el monolito | No hay acceso a su BD; los comandos se probaron con BD simulada | Fernanda y Julio |
 | Revisión municipal de trazados | Requiere a la contraparte municipal | Julio |
 

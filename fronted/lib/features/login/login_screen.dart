@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await Servicios.auth.login(_email.text.trim(), _password.text);
       if (mounted) Navigator.pushReplacementNamed(context, '/mapa');
     } on ApiException catch (e) {
-      setState(() => _error = e.mensaje);
+      if (mounted) setState(() => _error = e.mensaje);
     } finally {
       if (mounted) setState(() => _cargando = false);
     }

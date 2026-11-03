@@ -165,6 +165,25 @@ class PushFcmTest extends TestCase
         $this->assertDatabaseCount('notificaciones', 1);
     }
 
+    public function test_un_404_sin_unregistered_conserva_el_dispositivo_y_reintenta(): void
+    {
+        Http::fake([self::URL_FCM => Http::sequence()
+            ->push(['error' => ['status' => 'NOT_FOUND', 'message' => 'Project not found']], 404)
+            ->push(['name' => 'ok'])]);
+        $this->notificarLinea201(['usuario' => 5]);
+        $enviador = app(EnviadorPush::class);
+
+        $this->assertSame(0, $enviador->enviarPendientes());
+        $this->assertDatabaseHas('dispositivos', ['token' => self::TOKEN]);
+        $this->assertSame('pendiente', EnvioPush::sole()->estado);
+        $this->assertStringContainsString('404', EnvioPush::sole()->ultimo_error);
+
+        $this->travel(11)->seconds();
+        $this->assertSame(1, $enviador->enviarPendientes());
+        $this->assertDatabaseHas('dispositivos', ['token' => self::TOKEN]);
+        $this->assertSame('enviado', EnvioPush::sole()->estado);
+    }
+
     public function test_con_cuenta_de_servicio_se_autentica_por_oauth_y_reutiliza_el_token(): void
     {
         $clave = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);

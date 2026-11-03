@@ -1,7 +1,8 @@
 // Copia de fuentes sin vendor, node_modules, .dart_tool ni datos locales; BDs nuevas.
 // No publica cambios ni modifica el entorno Docker principal.
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, copyFileSync, writeFileSync, appendFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, copyFileSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
+import { stripVTControlCharacters } from 'node:util';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -44,9 +45,9 @@ async function port() {
   return result;
 }
 const ports = new Set();
-while (ports.size < 4) ports.add(await port());
-const [gateway, panel, swagger, database] = [...ports];
-const environment = { ...process.env, GATEWAY_PORT: String(gateway), ADMIN_WEB_PORT: String(panel), SWAGGER_PORT: String(swagger), UBICACION_DB_PORT: String(database) };
+while (ports.size < 5) ports.add(await port());
+const [gateway, panel, swagger, database, fcm] = [...ports];
+const environment = { ...process.env, GATEWAY_PORT: String(gateway), ADMIN_WEB_PORT: String(panel), SWAGGER_PORT: String(swagger), UBICACION_DB_PORT: String(database), FCM_MOCK_PORT: String(fcm) };
 const compose = ['compose', '-p', project, '-f', path.join(snapshot, 'docker-compose.yml')];
 function run(command, args, label) {
   console.log(label);
@@ -77,6 +78,7 @@ try {
   }
   const smoke = await run(shell, ['-NoProfile', ...(process.platform === 'win32' ? ['-ExecutionPolicy', 'Bypass'] : []), '-File', path.join(snapshot, 'scripts/smoke-test.ps1'),
     '-Gateway', `http://localhost:${gateway}`, '-Panel', `http://localhost:${panel}`, '-Swagger', `http://localhost:${swagger}`,
+    '-Fcm', `http://localhost:${fcm}`,
     '-ComposeProject', project, '-ComposeFile', path.join(snapshot, 'docker-compose.yml'), '-Sprint2'], 'Smoke completo de la copia limpia...');
   report.smoke = smoke.match(/Resultado: [^\r\n]+/)?.[0];
   report.estado = 'correcto';
@@ -94,5 +96,7 @@ try {
     catch (error) { report.limpieza = error.message; process.exitCode = 1; }
   }
   writeFileSync(path.join(artifacts, 'clean-verify.json'), `${JSON.stringify(report, null, 2)}\n`);
-  copyFileSync(logfile, path.join(artifacts, 'clean-verify.log'));
+  // Conservar el original local y publicar texto legible sin escapes ANSI ni espacios finales.
+  const readableLog = stripVTControlCharacters(readFileSync(logfile, 'utf8')).split(/\r?\n/).map((line) => line.trimEnd()).join('\n');
+  writeFileSync(path.join(artifacts, 'clean-verify.log'), readableLog);
 }

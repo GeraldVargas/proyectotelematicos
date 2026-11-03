@@ -34,7 +34,9 @@ class ClienteFcm
                 'android' => ['priority' => 'high'],
             ]]);
 
-        if ($res->status() === 404) {
+        // Un 404 también puede indicar una URL o proyecto incorrectos: solo FCM UNREGISTERED
+        // demuestra que hay que retirar el token, sin borrar dispositivos por un error de configuración.
+        if ($res->status() === 404 && collect($res->json('error.details', []))->contains('errorCode', 'UNREGISTERED')) {
             throw new TokenFcmInvalido('FCM: token no registrado');
         }
 

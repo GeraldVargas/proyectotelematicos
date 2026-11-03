@@ -121,13 +121,23 @@ class AuthController extends Controller
             return response()->json(['message' => 'Refresh token inválido o expirado'], 401);
         }
 
-        // Rotación: cada refresh token sirve una sola vez
+        // El UPDATE condicional consume el token una sola vez incluso si dos solicitudes
+        // lo leyeron vigente antes de que cualquiera de las dos iniciara esta transacción.
         $par = DB::transaction(function () use ($actual) {
-            $actual->update(['revoked_at' => now()]);
+            $consumidos = $actual->newQuery()->whereKey($actual->id)
+                ->whereNull('revoked_at')
+                ->where('expires_at', '>', now())
+                ->update(['revoked_at' => now()]);
+
+            if ($consumidos !== 1) {
+                return null;
+            }
 
             return $this->jwt->emitirPar($actual->user);
         });
 
-        return response()->json($par);
+        return $par
+            ? response()->json($par)
+            : response()->json(['message' => 'Refresh token inválido o expirado'], 401);
     }
 }

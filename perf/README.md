@@ -63,7 +63,8 @@ comparación final conviene repetir ambas medidas en un equipo x86.
 | 02/11/2026 | **monolito (línea base)** | 1072 / 1319 ms | 480 / 688 ms | 411 / 602 ms | 39,4 | 0,00 | [resultado](resultados/monolito-2026-11-03T00-40-18-619Z.md) |
 | 02/11/2026 | microservicios (preliminar) | 597 / 746 ms | 1001 / 1259 ms | 977 / 1216 ms | 21,9 | 0,00 | [resultado](resultados/microservicios-2026-11-03T00-43-52-600Z.md) |
 
-La fila de microservicios es un adelanto: el análisis comparativo y sus conclusiones son del Sprint 3.
+El análisis comparativo, sus límites y los siguientes pasos están en el
+[Sprint 3](../docs/sprint-3.md).
 
 La corrida [`monolito-2026-11-03T00-37-29`](resultados/monolito-2026-11-03T00-37-29-722Z.md), por el puerto
 publicado, se conserva como diagnóstico y no es la línea base: 18,2 req/s y 1,96 % de errores de conexión

@@ -15,7 +15,8 @@ import 'notificaciones_service.dart';
 /// funciona igual y solo se omite el push; los avisos siguen disponibles en la API.
 class PushService {
   /// Permite mostrar el aviso en primer plano desde cualquier pantalla.
-  static final GlobalKey<ScaffoldMessengerState> mensajero = GlobalKey<ScaffoldMessengerState>();
+  static final GlobalKey<ScaffoldMessengerState> mensajero =
+      GlobalKey<ScaffoldMessengerState>();
 
   static const _apiKey = String.fromEnvironment('FIREBASE_API_KEY');
   static const _appId = String.fromEnvironment('FIREBASE_APP_ID');
@@ -44,9 +45,18 @@ class PushService {
     if (_iniciado || !_configurado) return;
     _iniciado = true;
     try {
-      await Firebase.initializeApp(
-        options: const FirebaseOptions(apiKey: _apiKey, appId: _appId, messagingSenderId: _senderId, projectId: _projectId),
-      );
+      // Firebase sobrevive al cierre de sesión. Al volver a entrar reutilizamos la instancia
+      // ya creada para poder registrar de nuevo el token para la nueva sesión.
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: const FirebaseOptions(
+            apiKey: _apiKey,
+            appId: _appId,
+            messagingSenderId: _senderId,
+            projectId: _projectId,
+          ),
+        );
+      }
       final fcm = FirebaseMessaging.instance;
       final permiso = await fcm.requestPermission();
       if (permiso.authorizationStatus == AuthorizationStatus.denied) {
@@ -81,7 +91,8 @@ class PushService {
   }
 
   Future<void> _registrar(String token) async {
-    final plataforma = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+    final plataforma =
+        defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
     try {
       await _notificaciones.registrarDispositivo(token, plataforma);
       _token = token;
@@ -99,7 +110,8 @@ class PushService {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(aviso.title ?? 'Aviso', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(aviso.title ?? 'Aviso',
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           if (aviso.body != null) Text(aviso.body!),
         ],
       ),

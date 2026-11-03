@@ -14,6 +14,7 @@
   let eligiendoCercanas = false;
   let temporizadorRadiotaxis = null;
   let paginaUsuarios = 1;
+  let renovando = null;
 
   // ---------- Sesión (JWT emitido por la API de Usuarios) ----------
 
@@ -44,7 +45,14 @@
     return cuerpo;
   }
 
-  async function renovar() {
+  // Todas las solicitudes que reciban 401 comparten la misma rotación de refresh token.
+  // Sin este candado, dos peticiones paralelas invalidan la sesión aun si una renovación funcionó.
+  function renovar() {
+    renovando ??= pedirRenovacion().finally(() => { renovando = null; });
+    return renovando;
+  }
+
+  async function pedirRenovacion() {
     const actual = sesion.leer();
     if (!actual?.refresh_token) return false;
     const res = await fetch(`${CFG.gatewayUrl}/api/usuarios/refresh`, {

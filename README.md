@@ -98,8 +98,14 @@ flutter run --dart-define=GATEWAY_URL=http://<IP-de-tu-PC>:8080   # celular en l
 flutter run --dart-define=USE_MOCKS=true                          # sin backend
 ```
 
-En un celular físico, agrega la IP de tu PC en
-`fronted/android/app/src/main/res/xml/network_security_config.xml` (tráfico HTTP solo en desarrollo).
+En un celular físico, el build de depuración permite HTTP hacia la IP local de la PC; el build
+release exige HTTPS. No uses `localhost` en el teléfono.
+
+### Push FCM en un teléfono real
+
+El entorno normal usa `fcm-mock`. Para cambiarlo por Firebase sin publicar secretos, sigue la
+[guía de FCM real](docs/fcm-real.md). La prueba completa requiere un proyecto Firebase, una cuenta
+de servicio y un Android físico.
 
 ### Migrar datos del monolito
 

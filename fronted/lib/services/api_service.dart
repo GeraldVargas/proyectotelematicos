@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
@@ -8,6 +9,11 @@ class ApiService {
   ApiService({required this.baseUrl});
 
   Uri _u(String path) => Uri.parse('$baseUrl$path');
+
+  // Respuestas y coordenadas pueden contener datos de usuarios; nunca se escriben en producción.
+  void _debug(String mensaje) {
+    if (kDebugMode) debugPrint(mensaje);
+  }
 
   Future<dynamic> _get(String path) async {
     try {
@@ -82,53 +88,52 @@ class ApiService {
   // Referencias
   Future<List<dynamic>> getReferencias() async {
     final data = await _get('/referencias');
-    print("🔍 getReferencias() retornó: $data (tipo: ${data.runtimeType})");
+    _debug("getReferencias(): ${data.runtimeType}");
     if (data is List) return data;
-    print("⚠️ Esperaba List, recibí ${data.runtimeType}");
+    _debug("getReferencias(): formato inesperado ${data.runtimeType}");
     return [];
   }
 
   Future<List<dynamic>> getReferenciasDestrufi(int idTrufi) async {
     final data = await _get('/trufis/$idTrufi/referencias');
-    print("🔍 getReferenciasDestrufi($idTrufi) retornó: $data (tipo: ${data.runtimeType})");
+    _debug("getReferenciasDestrufi($idTrufi): ${data.runtimeType}");
     
     // Si es paginación Laravel con 'data' adentro
     if (data is Map && data['data'] is List) {
       final referencias = data['data'] as List;
-      print("✅ Referencias extraídas del JSON paginado: ${referencias.length}");
+      _debug("Referencias paginadas: ${referencias.length}");
       return referencias;
     }
     
     // Si es directo List
     if (data is List) return data;
     
-    print("⚠️ Esperaba List o Map con 'data', recibí ${data.runtimeType}");
+    _debug("Referencias de trufi: formato inesperado ${data.runtimeType}");
     return [];
   }
 
   Future<List<dynamic>> getReferenciasDeRadiotaxi(int idRadiotaxi) async {
     final data = await _get('/radiotaxis/$idRadiotaxi/referencias');
-    print("🔍 getReferenciasDeRadiotaxi($idRadiotaxi) retornó: $data (tipo: ${data.runtimeType})");
+    _debug("getReferenciasDeRadiotaxi($idRadiotaxi): ${data.runtimeType}");
     
     // Si es paginación Laravel con 'data' adentro
     if (data is Map && data['data'] is List) {
       final referencias = data['data'] as List;
-      print("✅ Referencias extraídas del JSON paginado: ${referencias.length}");
+      _debug("Referencias paginadas: ${referencias.length}");
       return referencias;
     }
     
     // Si es directo List
     if (data is List) return data;
     
-    print("⚠️ Esperaba List o Map con 'data', recibí ${data.runtimeType}");
+    _debug("Referencias de radio taxi: formato inesperado ${data.runtimeType}");
     return [];
   }
 
   // Ubicaciones - Con mejor manejo de errores para APK
   Future<List<dynamic>> getUbicacionesPorTrufi(int idTrufi) async {
     try {
-      print("🌍 getUbicacionesPorTrufi($idTrufi) iniciando...");
-      print("🔗 URL: ${_u('/trufis/$idTrufi/ubicaciones')}");
+      _debug("getUbicacionesPorTrufi($idTrufi) iniciando");
 
       final res = await http
           .get(
@@ -140,28 +145,27 @@ class ApiService {
           )
           .timeout(Duration(seconds: AppConfig.heavyApiTimeoutSeconds));
 
-      print("📡 Respuesta HTTP ubicaciones: ${res.statusCode}");
+      _debug("Ubicaciones HTTP: ${res.statusCode}");
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
         throw Exception('HTTP ${res.statusCode}: ${res.body}');
       }
 
       final body = jsonDecode(res.body);
-      print("🔍 getUbicacionesPorTrufi($idTrufi) retornó: $body (tipo: ${body.runtimeType})");
+      _debug("Ubicaciones de trufi: ${body.runtimeType}");
 
       if (body is List) return body;
-      print("⚠️ Esperaba List, recibí ${body.runtimeType}");
+      _debug("Ubicaciones de trufi: formato inesperado ${body.runtimeType}");
       return [];
     } catch (e) {
-      print("❌ Error en getUbicacionesPorTrufi($idTrufi): $e");
+      _debug("Error obteniendo ubicaciones de trufi: $e");
       rethrow; // Re-lanzar el error para que el frontend lo pueda manejar
     }
   }
 
   Future<List<dynamic>> getUbicacionesTodas() async {
     try {
-      print("🌍 getUbicacionesTodas() iniciando...");
-      print("🔗 URL: ${_u('/ubicaciones')}");
+      _debug("getUbicacionesTodas() iniciando");
 
       final res = await http
           .get(
@@ -173,20 +177,20 @@ class ApiService {
           )
           .timeout(Duration(seconds: AppConfig.heavyApiTimeoutSeconds));
 
-      print("📡 Respuesta HTTP todas ubicaciones: ${res.statusCode}");
+      _debug("Todas las ubicaciones HTTP: ${res.statusCode}");
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
         throw Exception('HTTP ${res.statusCode}: ${res.body}');
       }
 
       final body = jsonDecode(res.body);
-      print("🔍 getUbicacionesTodas() retornó: $body (tipo: ${body.runtimeType})");
+      _debug("Todas las ubicaciones: ${body.runtimeType}");
 
       if (body is List) return body;
-      print("⚠️ Esperaba List, recibí ${body.runtimeType}");
+      _debug("Todas las ubicaciones: formato inesperado ${body.runtimeType}");
       return [];
     } catch (e) {
-      print("❌ Error en getUbicacionesTodas(): $e");
+      _debug("Error obteniendo todas las ubicaciones: $e");
       rethrow; // Re-lanzar el error para que el frontend lo pueda manejar
     }
   }

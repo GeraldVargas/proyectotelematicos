@@ -9,7 +9,7 @@ flutter run -d chrome --dart-define=GATEWAY_URL=http://localhost:8080
 
 Android emulado: `flutter run --dart-define=GATEWAY_URL=http://10.0.2.2:8080`.
 Android físico en la misma Wi-Fi: `flutter run --dart-define=GATEWAY_URL=http://IP-DE-TU-PC:8080`.
-Autoriza esa IP de desarrollo en `android/app/src/main/res/xml/network_security_config.xml`.
+Las compilaciones de depuración ya permiten HTTP para la IP local; la versión release exige HTTPS.
 El teléfono debe poder alcanzar el puerto 8080 de la PC. No uses `localhost` en el teléfono.
 
 Usuario de la app: `demo@colcatrufis.local` / `demo12345`.

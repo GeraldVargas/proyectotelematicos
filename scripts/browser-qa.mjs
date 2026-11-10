@@ -13,7 +13,9 @@ const chrome = process.env.CHROME_PATH || [
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser',
 ].find(existsSync);
 if (!chrome) throw new Error('No se encontró Chrome. Define CHROME_PATH.');
-const artifacts = fileURLToPath(new URL('../docs/qa/artifacts/', import.meta.url));
+const artifacts = process.env.QA_ARTIFACTS_DIR
+  ? path.resolve(process.env.QA_ARTIFACTS_DIR)
+  : fileURLToPath(new URL('../docs/qa/artifacts/', import.meta.url));
 mkdirSync(artifacts, { recursive: true });
 const temporaryRoot = path.resolve(os.tmpdir());
 const profile = mkdtempSync(path.join(temporaryRoot, 'colcatrufis-qa-'));
@@ -115,6 +117,7 @@ try {
   await login('admin@colcatrufis.local', 'admin12345');
   await until(() => evaluate(`!document.getElementById('vista-mapa').hidden && document.getElementById('estado').textContent.includes('paradas desde PostGIS')`), 'login y rutas reales');
   check(await evaluate(`document.querySelectorAll('#lista-rutas > li').length >= 4`), 'Administrador ve mapa y al menos cuatro rutas');
+  await until(() => evaluate(`__qaMap.loaded() && __qaMap.queryRenderedFeatures({ layers: ['rutas'] }).length > 0`), 'rutas renderizadas antes de capturar el mapa');
   await screenshot('panel-mapa.png');
   await evaluate(`document.querySelector('#lista-rutas input').click()`);
   check(await evaluate(`__qaMap.getFilter('rutas-borde')[2][1].length === document.querySelectorAll('#lista-rutas > li').length - 1`), 'Desmarcar una ruta actualiza el filtro del mapa');

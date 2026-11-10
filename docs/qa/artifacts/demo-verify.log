@@ -1,0 +1,640 @@
+ Image colcatrufis-verify-1794337911923-worker-notificaciones Building
+ Image colcatrufis-verify-1794337911923-api-ubicacion Building
+ Image colcatrufis-verify-1794337911923-api-notificaciones Building
+ Image colcatrufis-verify-1794337911923-worker-eventos-ubicacion Building
+ Image colcatrufis-verify-1794337911923-demo-datos-ubicacion Building
+ Image colcatrufis-verify-1794337911923-api-usuarios Building
+ Image colcatrufis-verify-1794337911923-simulador-radiotaxis Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 4.80kB 0.0s done
+#1 DONE 0.0s
+
+#2 [api-notificaciones internal] load build definition from Dockerfile
+#2 transferring dockerfile: 794B 0.0s done
+#2 DONE 0.1s
+
+#3 [api-ubicacion internal] load build definition from Dockerfile
+#3 transferring dockerfile: 794B 0.0s done
+#3 DONE 0.1s
+
+#4 [api-usuarios internal] load build definition from Dockerfile
+#4 transferring dockerfile: 794B 0.0s done
+#4 DONE 0.1s
+
+#5 [worker-eventos-ubicacion internal] load metadata for docker.io/library/php:8.3.13-cli-alpine3.20
+#5 DONE 0.8s
+
+#6 [api-usuarios internal] load metadata for docker.io/library/composer:2.8.12
+#6 ...
+
+#7 [auth] library/composer:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#6 [api-usuarios internal] load metadata for docker.io/library/composer:2.8.12
+#6 DONE 11.3s
+
+#8 [worker-notificaciones internal] load .dockerignore
+#8 transferring context: 163B 0.0s done
+#8 DONE 0.0s
+
+#9 [api-usuarios internal] load .dockerignore
+#9 transferring context: 163B 0.0s done
+#9 DONE 0.0s
+
+#10 [worker-eventos-ubicacion internal] load .dockerignore
+#10 transferring context: 163B 0.0s done
+#10 DONE 0.0s
+
+#11 [worker-eventos-ubicacion internal] load build context
+#11 DONE 0.0s
+
+#12 [api-notificaciones internal] load build context
+#12 DONE 0.0s
+
+#13 [worker-eventos-ubicacion composer 1/1] FROM docker.io/library/composer:2.8.12@sha256:5248900ab8b5f7f880c2d62180e40960cd87f60149ec9a1abfd62ac72a02577c
+#13 resolve docker.io/library/composer:2.8.12@sha256:5248900ab8b5f7f880c2d62180e40960cd87f60149ec9a1abfd62ac72a02577c
+#13 resolve docker.io/library/composer:2.8.12@sha256:5248900ab8b5f7f880c2d62180e40960cd87f60149ec9a1abfd62ac72a02577c 0.1s done
+#13 DONE 0.1s
+
+#14 [api-ubicacion stage-1 1/8] FROM docker.io/library/php:8.3.13-cli-alpine3.20@sha256:0593a69baf3e1d9adbc79077bdd0821718fab98dfc47d2f007c6e5495f89f76f
+#14 resolve docker.io/library/php:8.3.13-cli-alpine3.20@sha256:0593a69baf3e1d9adbc79077bdd0821718fab98dfc47d2f007c6e5495f89f76f 0.1s done
+#14 DONE 0.1s
+
+#11 [worker-eventos-ubicacion internal] load build context
+#11 ...
+
+#12 [api-notificaciones internal] load build context
+#12 transferring context: 3.73kB 0.1s done
+#12 DONE 0.1s
+
+#15 [worker-notificaciones stage-1 3/8] COPY --from=composer /usr/bin/composer /usr/bin/composer
+#15 CACHED
+
+#16 [worker-notificaciones stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#16 CACHED
+
+#17 [worker-notificaciones stage-1 7/8] COPY . .
+#17 CACHED
+
+#18 [worker-notificaciones stage-1 2/8] RUN apk add --no-cache libpq-dev mysql-client postgresql-client     && docker-php-ext-install pdo_mysql pdo_pgsql pcntl
+#18 CACHED
+
+#19 [worker-notificaciones stage-1 4/8] WORKDIR /app
+#19 CACHED
+
+#20 [worker-notificaciones stage-1 5/8] COPY composer.json composer.lock ./
+#20 CACHED
+
+#21 [worker-notificaciones stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#21 CACHED
+
+#11 [worker-eventos-ubicacion internal] load build context
+#11 transferring context: 9.16kB 0.1s done
+#11 DONE 0.2s
+
+#22 [api-usuarios internal] load build context
+#22 transferring context: 3.90kB 0.1s done
+#22 DONE 0.2s
+
+#23 [demo-datos-ubicacion stage-1 5/8] COPY composer.json composer.lock ./
+#23 CACHED
+
+#24 [demo-datos-ubicacion stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#24 CACHED
+
+#16 [demo-datos-ubicacion stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#16 CACHED
+
+#18 [api-usuarios stage-1 2/8] RUN apk add --no-cache libpq-dev mysql-client postgresql-client     && docker-php-ext-install pdo_mysql pdo_pgsql pcntl
+#18 CACHED
+
+#19 [api-usuarios stage-1 4/8] WORKDIR /app
+#19 CACHED
+
+#15 [api-usuarios stage-1 3/8] COPY --from=composer /usr/bin/composer /usr/bin/composer
+#15 CACHED
+
+#25 [api-usuarios stage-1 5/8] COPY composer.json composer.lock ./
+#25 CACHED
+
+#26 [api-usuarios stage-1 6/8] RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+#26 CACHED
+
+#27 [api-usuarios stage-1 7/8] COPY . .
+#27 CACHED
+
+#28 [api-usuarios stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#28 CACHED
+
+#29 [api-usuarios] exporting to image
+#29 exporting layers done
+#29 exporting manifest sha256:2704c0f4de41068a47ccb506ef42010f2c8f0757cda95596bebfc80f70f471ff 0.0s done
+#29 exporting config sha256:c69058fec6224bd9aa921f68faee8d68acef36189a816030abdbf103a69c3cb0
+#29 exporting config sha256:c69058fec6224bd9aa921f68faee8d68acef36189a816030abdbf103a69c3cb0 0.0s done
+#29 exporting attestation manifest sha256:8ff0547c475f1eb85f08e49d40a6110516edef70d1b350b902efa6f883d6397f
+#29 ...
+
+#30 [demo-datos-ubicacion stage-1 7/8] COPY . .
+#30 DONE 0.2s
+
+#31 [api-notificaciones] exporting to image
+#31 exporting layers 0.0s done
+#31 exporting manifest sha256:31aa2ef018c97019dbac1429a41299fdfc725758f596e997381d6e4f0e7afbf4 0.0s done
+#31 exporting config sha256:4cebdbb5581570cfdb16dacfd886e1e8fd2781c20c752b54cd175a5eb2490da5 0.0s done
+#31 exporting attestation manifest sha256:b7c05f285ddb5bd8bdfd91384469c03ebc1c279a8e35bee0f6b863d9f7655f4b 0.1s done
+#31 exporting manifest list sha256:0f9a74a008bf330960975182f71aadef7fc43e7e1f010330b878c577ff635a7a 0.0s done
+#31 naming to docker.io/library/colcatrufis-verify-1794337911923-api-notificaciones:latest 0.0s done
+#31 unpacking to docker.io/library/colcatrufis-verify-1794337911923-api-notificaciones:latest 0.0s done
+#31 DONE 0.4s
+
+#29 [api-usuarios] exporting to image
+#29 exporting attestation manifest sha256:8ff0547c475f1eb85f08e49d40a6110516edef70d1b350b902efa6f883d6397f 0.1s done
+#29 exporting manifest list sha256:df45746b36a1e6dce59e202543faaa54c891419a96269552eef626235bf57bb0 0.0s done
+#29 naming to docker.io/library/colcatrufis-verify-1794337911923-api-usuarios:latest 0.0s done
+#29 unpacking to docker.io/library/colcatrufis-verify-1794337911923-api-usuarios:latest 0.0s done
+#29 DONE 0.4s
+
+#32 [worker-notificaciones] exporting to image
+#32 exporting layers 0.0s done
+#32 exporting manifest sha256:09db5520bea61e1376b4a80f4830418a1a676e8258379496e900041ffb6792a5 0.1s done
+#32 exporting config sha256:d0bd12208a2f544a9c8700d04bdfe4eb898afe2ef66390176a5031e0865804c5 0.0s done
+#32 exporting attestation manifest sha256:94661e014d0dbddda9969196090f8e56a5d0091cb064b44ae24337f12a771113 0.0s done
+#32 exporting manifest list sha256:1007c1ee08195e0e09ccc9e468256d5d1657f54136898be0cb4376d1b4b99251 0.0s done
+#32 naming to docker.io/library/colcatrufis-verify-1794337911923-worker-notificaciones:latest 0.0s done
+#32 unpacking to docker.io/library/colcatrufis-verify-1794337911923-worker-notificaciones:latest 0.0s done
+#32 DONE 0.4s
+
+#33 [demo-datos-ubicacion stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#33 ...
+
+#34 [api-usuarios] resolving provenance for metadata file
+#34 DONE 0.0s
+
+#35 [api-notificaciones] resolving provenance for metadata file
+#35 DONE 0.2s
+
+#36 [worker-notificaciones] resolving provenance for metadata file
+#36 DONE 0.2s
+
+#33 [demo-datos-ubicacion stage-1 8/8] RUN touch .env     && composer dump-autoload --optimize     && php artisan package:discover --ansi     && chmod +x docker/entrypoint.sh
+#33 1.475 Generating optimized autoload files
+#33 5.685 > Illuminate\Foundation\ComposerScripts::postAutoloadDump
+#33 5.703 > @php artisan package:discover --ansi
+#33 5.885
+#33 5.885    INFO  Discovering packages.
+#33 5.885
+#33 5.890   laravel/pail .......................................................... DONE
+#33 5.891   laravel/sail .......................................................... DONE
+#33 5.892   laravel/tinker ........................................................ DONE
+#33 5.893   nesbot/carbon ......................................................... DONE
+#33 5.893   nunomaduro/collision .................................................. DONE
+#33 5.894   nunomaduro/termwind ................................................... DONE
+#33 5.895
+#33 5.902 Generated optimized autoload files containing 7001 classes
+#33 6.033
+#33 6.033    INFO  Discovering packages.
+#33 6.033
+#33 6.038   laravel/pail .......................................................... DONE
+#33 6.038   laravel/sail .......................................................... DONE
+#33 6.038   laravel/tinker ........................................................ DONE
+#33 6.039   nesbot/carbon ......................................................... DONE
+#33 6.040   nunomaduro/collision .................................................. DONE
+#33 6.040   nunomaduro/termwind ................................................... DONE
+#33 6.041
+#33 DONE 6.1s
+
+#37 [worker-eventos-ubicacion] exporting to image
+#37 exporting layers
+#37 exporting layers 0.2s done
+#37 exporting manifest sha256:1ebf696b9aa08cf818c891852d5bd016158a4fb4f75b21dc84206be85f310c48 0.1s done
+#37 exporting config sha256:d6be83222a18209baa94cbe9b7080a98d362b83a936f50b5b990ae5dcd123a29 0.1s done
+#37 exporting attestation manifest sha256:573b6647d3d624a6a27e96877d671ca33d9e8748634e441fae67e2b0649ddbbf 0.1s done
+#37 exporting manifest list sha256:9f346a91256658700c38967055b09fb578715356c40b0f10a3050f10e9473de2
+#37 exporting manifest list sha256:9f346a91256658700c38967055b09fb578715356c40b0f10a3050f10e9473de2 0.1s done
+#37 naming to docker.io/library/colcatrufis-verify-1794337911923-worker-eventos-ubicacion:latest 0.0s done
+#37 unpacking to docker.io/library/colcatrufis-verify-1794337911923-worker-eventos-ubicacion:latest
+#37 unpacking to docker.io/library/colcatrufis-verify-1794337911923-worker-eventos-ubicacion:latest 0.2s done
+#37 DONE 0.9s
+
+#38 [api-ubicacion] exporting to image
+#38 exporting layers 0.2s done
+#38 exporting manifest sha256:185c73e49228f6e3b932148fabd8ecd541d8114e6831948dde95120177c3ea53 0.1s done
+#38 exporting config sha256:b33a5d253280c825a11800413d4307d2519b30e53b2c2a830ea8761fdcef8577 0.1s done
+#38 exporting attestation manifest sha256:5164656754efe5eea8c0ce260cb989f1ef4d450f325ebe649d41c4cef232b689 0.1s done
+#38 exporting manifest list sha256:3277ac854c184fdb01f8eaddb69cea9ba12564412b1699580523b7c8031a0618 0.1s done
+#38 naming to docker.io/library/colcatrufis-verify-1794337911923-api-ubicacion:latest 0.0s done
+#38 unpacking to docker.io/library/colcatrufis-verify-1794337911923-api-ubicacion:latest 0.2s done
+#38 DONE 1.0s
+
+#39 [simulador-radiotaxis] exporting to image
+#39 exporting layers 0.2s done
+#39 exporting manifest sha256:79ead4ba4abfb14a717e109a771ff35064998b4ff702ff0b516d1aebafefe68f 0.1s done
+#39 exporting config sha256:ea14ef6643dfc1ce7fad40215549c7efd2afb363a107e8013a219f78f1fdcc53 0.1s done
+#39 exporting attestation manifest sha256:8f5b1765aaf40bb73c5346bf3981c6c1b45f3193f1fbeeb6cc9f7d7a66b7ba4f 0.1s done
+#39 exporting manifest list sha256:80962cabbf82a57cbc71e93db9f15ee42a8333cb974672ef6b0f2af4f84b35c2 0.1s done
+#39 naming to docker.io/library/colcatrufis-verify-1794337911923-simulador-radiotaxis:latest 0.0s done
+#39 unpacking to docker.io/library/colcatrufis-verify-1794337911923-simulador-radiotaxis:latest 0.2s done
+#39 DONE 0.9s
+
+#40 [demo-datos-ubicacion] exporting to image
+#40 exporting layers 0.2s done
+#40 exporting manifest sha256:03f687162fb95f83ee5bca9e93997cac91a03365299cafeb80c15e5ed7183d44 0.1s done
+#40 exporting config sha256:f502797194328d8ec2580111d3acadca0c0e92ca71866cc482fe73330c164155 0.1s done
+#40 exporting attestation manifest sha256:c31c08297f105bcc6df32cff280fc050deae589c5214dc69b79ea23019cc9c81 0.1s done
+#40 exporting manifest list sha256:91d816833956ee64c1f56ec3c6f538193572fba87a45dc207b17581727e5698d 0.1s done
+#40 naming to docker.io/library/colcatrufis-verify-1794337911923-demo-datos-ubicacion:latest 0.0s done
+#40 unpacking to docker.io/library/colcatrufis-verify-1794337911923-demo-datos-ubicacion:latest 0.2s done
+#40 DONE 1.0s
+
+#41 [worker-eventos-ubicacion] resolving provenance for metadata file
+#41 DONE 0.2s
+
+#42 [simulador-radiotaxis] resolving provenance for metadata file
+#42 DONE 0.2s
+
+#43 [api-ubicacion] resolving provenance for metadata file
+#43 DONE 0.1s
+
+#44 [demo-datos-ubicacion] resolving provenance for metadata file
+#44 DONE 0.0s
+ Image colcatrufis-verify-1794337911923-worker-notificaciones Built
+ Image colcatrufis-verify-1794337911923-worker-eventos-ubicacion Built
+ Image colcatrufis-verify-1794337911923-api-ubicacion Built
+ Image colcatrufis-verify-1794337911923-demo-datos-ubicacion Built
+ Image colcatrufis-verify-1794337911923-simulador-radiotaxis Built
+ Image colcatrufis-verify-1794337911923-api-notificaciones Built
+ Image colcatrufis-verify-1794337911923-api-usuarios Built
+ Volume colcatrufis-verify-1794337911923_db-notificaciones Creating
+ Volume colcatrufis-verify-1794337911923_jwt-keys Creating
+ Volume colcatrufis-verify-1794337911923_db-ubicacion Creating
+ Volume colcatrufis-verify-1794337911923_db-usuarios Creating
+ Network colcatrufis-verify-1794337911923_default Creating
+ Volume colcatrufis-verify-1794337911923_db-notificaciones Creating
+ Network colcatrufis-verify-1794337911923_default Creating
+ Volume colcatrufis-verify-1794337911923_db-usuarios Creating
+ Volume colcatrufis-verify-1794337911923_db-ubicacion Creating
+ Volume colcatrufis-verify-1794337911923_jwt-keys Creating
+ Volume colcatrufis-verify-1794337911923_db-usuarios Created
+ Volume colcatrufis-verify-1794337911923_db-usuarios Created
+ Volume colcatrufis-verify-1794337911923_jwt-keys Created
+ Volume colcatrufis-verify-1794337911923_jwt-keys Created
+ Volume colcatrufis-verify-1794337911923_db-ubicacion Created
+ Volume colcatrufis-verify-1794337911923_db-ubicacion Created
+ Volume colcatrufis-verify-1794337911923_db-notificaciones Created
+ Volume colcatrufis-verify-1794337911923_db-notificaciones Created
+ Network colcatrufis-verify-1794337911923_default Created
+ Network colcatrufis-verify-1794337911923_default Created
+ Container colcatrufis-verify-1794337911923-redis-1 Creating
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Creating
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Creating
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Creating
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Creating
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Creating
+ Container colcatrufis-verify-1794337911923-admin-web-1 Creating
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Created
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Created
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Created
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Creating
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Created
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Created
+ Container colcatrufis-verify-1794337911923-admin-web-1 Created
+ Container colcatrufis-verify-1794337911923-redis-1 Created
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Creating
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Creating
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Created
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Created
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Creating
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Created
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Creating
+ Container colcatrufis-verify-1794337911923-gateway-1 Creating
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Creating
+ Container colcatrufis-verify-1794337911923-gateway-1 Created
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Created
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Created
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Created
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Creating
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Created
+ Container colcatrufis-verify-1794337911923-admin-web-1 Starting
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Starting
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Starting
+ Container colcatrufis-verify-1794337911923-redis-1 Starting
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Starting
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Starting
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Starting
+ Container colcatrufis-verify-1794337911923-admin-web-1 Started
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Started
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Started
+ Container colcatrufis-verify-1794337911923-redis-1 Started
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Waiting
+ Container colcatrufis-verify-1794337911923-redis-1 Waiting
+ Container colcatrufis-verify-1794337911923-redis-1 Waiting
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Started
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Started
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Started
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Waiting
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Healthy
+ Container colcatrufis-verify-1794337911923-redis-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Starting
+ Container colcatrufis-verify-1794337911923-redis-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Started
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-redis-1 Waiting
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-redis-1 Healthy
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Starting
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Started
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Waiting
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Waiting
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Healthy
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Starting
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Healthy
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Starting
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Starting
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Started
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Started
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Started
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Waiting
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Exited
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Starting
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Started
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Healthy
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Starting
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Started
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Healthy
+ Container colcatrufis-verify-1794337911923-gateway-1 Starting
+ Container colcatrufis-verify-1794337911923-gateway-1 Started
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Waiting
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Waiting
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Waiting
+ Container colcatrufis-verify-1794337911923-redis-1 Waiting
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Waiting
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Waiting
+ Container colcatrufis-verify-1794337911923-admin-web-1 Waiting
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Waiting
+ Container colcatrufis-verify-1794337911923-gateway-1 Waiting
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Waiting
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Waiting
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Waiting
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Healthy
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Exited
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Healthy
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Healthy
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Healthy
+ Container colcatrufis-verify-1794337911923-admin-web-1 Healthy
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Healthy
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Healthy
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Healthy
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Healthy
+ Container colcatrufis-verify-1794337911923-redis-1 Healthy
+ Container colcatrufis-verify-1794337911923-gateway-1 Healthy
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Healthy
+demo-datos-ubicacion-1  |
+demo-datos-ubicacion-1  |    INFO  Seeding database.
+demo-datos-ubicacion-1  |
+demo-datos-ubicacion-1  | Demo lista: 22 rutas OSM, 135 paradas OSM y 4 radio taxis demo.
+{"driver":"mysql","users":2,"demo":true,"password_ok":true}
+   PASS  Tests\Feature\NotificacionesTest
+  ✓ sin header del gateway devuelve 401                                  0.69s
+  ✓ lista solo las notificaciones del usuario del jwt                    0.07s
+  ✓ suscribirse a una linea                                              0.03s
+  ✓ evento ruta actualizada notifica a los suscriptores una sola vez     0.06s
+  ✓ evento incompleto es rechazado                                       0.02s
+
+   PASS  Tests\Feature\AuthTest
+  ✓ login correcto devuelve jwt rs256 con claims acordados               0.84s
+  ✓ login fallido devuelve 401                                           0.02s
+  ✓ login de usuario desactivado devuelve 403                            0.02s
+  ✓ token expirado es rechazado                                          0.01s
+  ✓ perfil con token valido                                              0.02s
+  ✓ perfil sin token devuelve 401                                        0.01s
+  ✓ registro crea usuario con rol usuario                                0.04s
+  ✓ refresh rota el token y no se puede reutilizar                       0.04s
+  ✓ refresh expirado devuelve 401                                        0.03s
+  ✓ dos solicitudes que leyeron el mismo refresh solo emiten un par      0.03s
+  ✓ logout revoca el refresh token de la sesion                          0.03s
+  ✓ logout sin refresh token cierra todas las sesiones                   0.03s
+  ✓ logout no revoca sesiones de otro usuario                            0.03s
+  ✓ logout sin token devuelve 401                                        0.01s
+  ✓ usuario solo puede ver su propio perfil por id                       0.02s
+  ✓ admin y encargado ven cualquier perfil por id                        0.02s
+  ✓ perfil ajeno inexistente no revela su existencia a un usuario        0.01s
+  ✓ lista de usuarios solo para admin                                    0.03s
+  ✓ lista de usuarios pagina y valida parametros                         0.04s
+  ✓ usuario desactivado pierde acceso aunque su jwt siga vigente         0.01s
+
+   PASS  Tests\Feature\PushFcmTest
+  ✓ registrar dispositivo es idempotente                                 0.03s
+  ✓ el token pasa a la ultima cuenta sin heredar push pendientes         0.02s
+  ✓ validacion y autenticacion de dispositivos                           0.02s
+  ✓ solo el dueno elimina su dispositivo                                 0.02s
+  ✓ evento envia push a todos los dispositivos suscritos                 0.09s
+  ✓ reprocesar el evento no duplica el push                              0.01s
+  ✓ sin push habilitado solo se guarda la notificacion                   0.01s
+  ✓ error temporal reintenta con espera y luego entrega                  0.04s
+  ✓ tras agotar los intentos queda fallido                               0.02s
+  ✓ token no registrado elimina el dispositivo                           0.01s
+  ✓ un 404 sin unregistered conserva el dispositivo y reintenta          0.02s
+  ✓ con cuenta de servicio se autentica por oauth y reutiliza el token   0.12s
+
+   PASS  Tests\Feature\MigrarUsuariosMonolitoTest
+  ✓ usuario del monolito puede iniciar sesion tras migrar                0.05s
+  ✓ dry run no escribe                                                   0.02s
+
+  Tests:    22 passed (89 assertions)
+  Duration: 1.59s
+
+
+   PASS  Tests\Feature\SuscripcionesYHistorialTest
+  ✓ desuscribirse elimina solo la linea del usuario                      0.03s
+  ✓ desuscribirse de una linea no suscrita devuelve 404                  0.01s
+  ✓ suscripciones exigen identidad del gateway                           0.02s
+  ✓ historial filtra por fecha incluyendo el dia final                   0.06s
+  ✓ historial respeta la hora si se indica                               0.03s
+  ✓ historial pagina                                                     0.02s
+  ✓ historial rechaza parametros invalidos                               0.02s
+
+  Tests:    24 passed (96 assertions)
+  Duration: 1.67s
+
+
+   PASS  Tests\Feature\EdicionRutaTest
+  ✓ admin actualiza geometria y persiste evento en la misma transaccion  2.12s
+  ✓ usuario y encargado no pueden editar                                 0.02s
+  ✓ sin identidad del gateway no se permite editar                       0.02s
+  ✓ geometrias invalidas no modifican la ruta ni generan eventos         0.06s
+  ✓ ruta inexistente y descripcion vacia                                 0.03s
+  ✓ reiniciar el seeder conserva las ediciones                           0.08s
+  ✓ fallo al crear el evento revierte la edicion                         0.08s
+  ✓ despachador reintenta sin perder el uuid y no reenvia publicados     0.06s
+
+   PASS  Tests\Feature\ParadasCercanasTest
+  ✓ busqueda en metros filtra y ordena por distancia                     0.09s
+  ✓ cercania vacia y limite de resultados                                0.07s
+  ✓ parametros invalidos devuelven 422                                   0.03s
+
+   PASS  Tests\Feature\PrepararDemoTest
+  ✓ prepara el conjunto completo en una base vacia                       0.09s
+  ✓ repetir la preparacion conserva ediciones y no duplica datos         0.15s
+  ✓ restaura una ruta ausente y detecta paradas desvinculadas            0.15s
+
+   PASS  Tests\Feature\RadiotaxisTest
+  ✓ devuelve solo disponibles con posicion como geojson                  0.04s
+  ✓ sin radiotaxis devuelve coleccion vacia                              0.02s
+  ✓ admin actualiza posicion y disponibilidad                            0.03s
+  ✓ solo admin puede actualizar la posicion                              0.03s
+  ✓ posicion invalida o radiotaxi inexistente                            0.04s
+  ✓ seeder crea demostracion una sola vez y marcada                      0.06s
+  ✓ simulador mueve solo los de demostracion sobre las rutas             0.06s
+  ✓ migracion del monolito importa paradas y retira demostracion         0.03s
+
+   PASS  Tests\Feature\RutasGeoJsonTest
+  ✓ rutas devuelve feature collection valida                             0.07s
+  ✓ filtro por linea                                                     0.03s
+  ✓ ruta por id incluye paradas ordenadas                                0.05s
+  ✓ ruta inexistente devuelve 404                                        0.04s
+  ✓ paradas son puntos lng lat                                           0.05s
+  ✓ paradas filtradas por ruta                                           0.05s
+
+  Tests:    28 passed (22209 assertions)
+  Duration: 3.87s
+
+{"driver":"mysql","users":2,"demo":true,"password_ok":true}OK: Panel disponible
+OK: Swagger disponible
+OK: Swagger publica usuarios.yaml
+OK: Swagger publica ubicacion.yaml
+OK: Swagger publica notificaciones.yaml
+OK: Preflight del login
+OK: Preflight: CORS sin cabeceras duplicadas
+OK: /api/ubicacion/rutas sin token devuelve 401
+OK: /api/usuarios/perfil sin token devuelve 401
+OK: /api/notificaciones sin token devuelve 401
+OK: JWT falso rechazado
+OK: Clave incorrecta rechazada
+OK: Login demo
+OK: Login: CORS sin cabeceras duplicadas
+OK: Login emite JWT
+OK: /api/usuarios/perfil con JWT devuelve 200
+OK: /api/usuarios/perfil: CORS sin cabeceras duplicadas
+OK: /api/ubicacion/rutas con JWT devuelve 200
+OK: /api/ubicacion/rutas: CORS sin cabeceras duplicadas
+OK: /api/ubicacion/paradas con JWT devuelve 200
+OK: /api/ubicacion/paradas: CORS sin cabeceras duplicadas
+OK: /api/notificaciones con JWT devuelve 200
+OK: /api/notificaciones: CORS sin cabeceras duplicadas
+OK: Perfil y rol del usuario demo
+OK: GeoJSON con al menos 3 rutas
+OK: Gateway conserva el filtro de linea
+OK: Detalle de ruta
+OK: Paradas filtradas por ruta
+OK: Gateway rechaza JWT firmado y expirado
+OK: Refresh de sesion
+OK: Refresh token anterior no puede reutilizarse
+OK: Suscripcion a linea 252
+OK: Evento Ubicacion -> Redis -> Notificaciones
+OK: Paradas cercanas por el Gateway
+OK: Primera parada cercana a menos de un metro
+OK: Usuario no puede editar ni falsificar el rol con headers
+OK: Administrador puede guardar un trazado
+OK: Edicion de ruta: CORS sin cabeceras duplicadas
+OK: Edicion devuelve el UUID del evento persistido
+OK: Edicion -> evento persistido -> Redis -> notificacion del suscriptor
+OK: Usuario no lista usuarios
+OK: Administrador lista usuarios
+OK: Usuario no ve perfiles ajenos
+OK: Administrador ve perfiles ajenos
+OK: Logout por el Gateway
+OK: Refresh token revocado
+OK: Al menos 6 rutas cargadas
+OK: Radio taxis sin token devuelve 401
+OK: Radio taxis como GeoJSON
+OK: Usuario no mueve radio taxis
+OK: Administrador actualiza la posicion
+OK: Historial con filtro de fecha
+OK: Historial rechaza fechas invertidas
+OK: Registro de dispositivo
+OK: Edicion que dispara el push
+OK: Edicion -> evento -> worker -> push recibido por FCM
+OK: Eliminacion de dispositivo
+OK: Desuscripcion de la linea 252
+OK: Desuscribir de nuevo devuelve 404
+Resultado: 59 comprobaciones correctas.
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Stopping
+ Container colcatrufis-verify-1794337911923-admin-web-1 Stopping
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Stopping
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Stopping
+ Container colcatrufis-verify-1794337911923-gateway-1 Stopping
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Stopping
+ Container colcatrufis-verify-1794337911923-gateway-1 Stopped
+ Container colcatrufis-verify-1794337911923-gateway-1 Removing
+ Container colcatrufis-verify-1794337911923-gateway-1 Removed
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Stopping
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Stopped
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Removing
+ Container colcatrufis-verify-1794337911923-admin-web-1 Stopped
+ Container colcatrufis-verify-1794337911923-admin-web-1 Removing
+ Container colcatrufis-verify-1794337911923-swagger-ui-1 Removed
+ Container colcatrufis-verify-1794337911923-admin-web-1 Removed
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Stopped
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Removing
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Stopped
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Removing
+ Container colcatrufis-verify-1794337911923-worker-eventos-ubicacion-1 Removed
+ Container colcatrufis-verify-1794337911923-simulador-radiotaxis-1 Removed
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Stopping
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Stopped
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Removing
+ Container colcatrufis-verify-1794337911923-demo-datos-ubicacion-1 Removed
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Stopping
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Stopped
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Removing
+ Container colcatrufis-verify-1794337911923-api-usuarios-1 Removed
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Stopping
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Stopped
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Removing
+ Container colcatrufis-verify-1794337911923-api-ubicacion-1 Removed
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Stopping
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Stopped
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Removing
+ Container colcatrufis-verify-1794337911923-db-ubicacion-1 Removed
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Stopped
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Removing
+ Container colcatrufis-verify-1794337911923-db-usuarios-1 Removed
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Stopped
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Removing
+ Container colcatrufis-verify-1794337911923-worker-notificaciones-1 Removed
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Stopping
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Stopping
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Stopped
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Removing
+ Container colcatrufis-verify-1794337911923-api-notificaciones-1 Removed
+ Container colcatrufis-verify-1794337911923-redis-1 Stopping
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Stopping
+ Container colcatrufis-verify-1794337911923-redis-1 Stopped
+ Container colcatrufis-verify-1794337911923-redis-1 Removing
+ Container colcatrufis-verify-1794337911923-redis-1 Removed
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Stopped
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Removing
+ Container colcatrufis-verify-1794337911923-db-notificaciones-1 Removed
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Stopped
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Removing
+ Container colcatrufis-verify-1794337911923-fcm-mock-1 Removed
+ Volume colcatrufis-verify-1794337911923_db-ubicacion Removing
+ Volume colcatrufis-verify-1794337911923_jwt-keys Removing
+ Network colcatrufis-verify-1794337911923_default Removing
+ Volume colcatrufis-verify-1794337911923_db-ubicacion Removed
+ Volume colcatrufis-verify-1794337911923_db-notificaciones Removing
+ Volume colcatrufis-verify-1794337911923_db-usuarios Removing
+ Volume colcatrufis-verify-1794337911923_jwt-keys Removed
+ Volume colcatrufis-verify-1794337911923_db-notificaciones Removed
+ Volume colcatrufis-verify-1794337911923_db-usuarios Removed
+ Network colcatrufis-verify-1794337911923_default Removed

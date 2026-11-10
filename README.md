@@ -25,15 +25,39 @@ Rutas de trufi, paradas y radio taxis de Colcapirhua (Cochabamba). Este reposito
 
 ## Levantar el entorno (≈ 10 minutos la primera vez)
 
-Requisitos: **Docker Desktop** (o Colima) con Docker Compose v2. Nada más.
+Requisitos: Git, **Docker Desktop** iniciado (o Docker Engine/Colima) y Docker Compose v2.
+Las APIs incluyen PHP y Composer en sus imágenes; no hace falta instalarlos en la PC.
+El smoke de Windows usa PowerShell 5.1+; el de Linux/macOS usa Bash, curl y Python 3.
 
 ```bash
 git clone https://github.com/GeraldVargas/proyectotelematicos.git
 cd proyectotelematicos
-docker compose up -d --build
-docker compose ps          # todo en "running" / "healthy"
-./scripts/smoke-test.sh    # verificación extremo a extremo
+docker compose up -d --build --wait --wait-timeout 300
+docker compose ps
+bash scripts/smoke-test.sh
 ```
+
+En Windows, desde PowerShell, usa esta verificación en lugar del comando Bash:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-test.ps1 -Sprint2
+```
+
+El primer arranque descarga imágenes y dependencias; su duración depende de la conexión y de la
+caché. Para preparar el entorno de presentación con datos completos y radio taxis en movimiento:
+
+```bash
+docker compose --profile demo up -d --build --wait --wait-timeout 300
+docker compose --profile demo ps --all
+docker compose logs demo-datos-ubicacion
+```
+
+`demo-datos-ubicacion` debe terminar con código 0 y mostrar «Demo lista: 22 rutas OSM, 135 paradas
+OSM y 4 radio taxis demo» en una instalación nueva. Verifica asociaciones y geometrías PostGIS;
+solo entonces arranca el simulador. Este actualiza los taxis cada 15 s, y los clientes consultan
+su posición cada 30 s. El seeder agrega rutas ausentes y conserva las ediciones del administrador.
+Si hay radio taxis importados, conserva esos datos y no fuerza la creación de taxis ficticios.
+Guion de presentación y grabación: [demo del Sprint 3](docs/demo-sprint-3.md).
 
 | Servicio | URL |
 |---|---|
@@ -50,8 +74,10 @@ Usuarios de desarrollo (los crea el seeder de api-usuarios):
 | `admin@colcatrufis.local` | `admin12345` | admin |
 | `demo@colcatrufis.local` | `demo12345` | usuario |
 
-Si un puerto ya está ocupado en tu PC: `GATEWAY_PORT=9080 ADMIN_WEB_PORT=9081 docker compose up -d`.
-Para ver moverse los radio taxis de demostración: `docker compose --profile demo up -d`.
+Si un puerto está ocupado, cambia `GATEWAY_PORT`, `ADMIN_WEB_PORT`, `SWAGGER_PORT`,
+`FCM_MOCK_PORT` o `UBICACION_DB_PORT` en el entorno. Al cambiar el puerto del Gateway, actualiza
+también `gatewayUrl` en `admin-web/config.js`, los servidores de `docs/openapi/*.yaml` y
+`GATEWAY_URL` en Flutter. La guía y sus ejemplos usan los puertos predeterminados de la tabla.
 
 ### Probar a mano
 
@@ -88,6 +114,19 @@ docker compose exec api-usuarios php artisan test
 docker compose exec api-ubicacion php artisan test        # usa la BD ubicacion_test de PostGIS
 docker compose exec api-notificaciones php artisan test
 ```
+
+Para comprobar la demo desde una copia de fuentes limpia y bases nuevas, con Node.js 22+ y
+PowerShell (`pwsh` en Linux/macOS):
+
+```bash
+node scripts/clean-verify.mjs --demo
+```
+
+El script crea un proyecto Docker separado con puertos libres, comprueba datos y movimiento,
+ejecuta las tres suites y el smoke completo, y retira solo sus contenedores y volúmenes
+temporales. Guarda el resultado en `docs/qa/artifacts/demo-verify.json` y el registro en
+`demo-verify.log`. Conserva las bases del entorno principal. Reutiliza la caché de Docker:
+no equivale a una descarga fría ni a una verificación humana por otro integrante.
 
 ### App Flutter contra el Gateway
 
@@ -135,6 +174,17 @@ docker compose exec api-ubicacion php artisan ubicacion:migrar-radiotaxis
 
 ## Documentación
 
+### Registros complementarios del 10/11/2026
+
+- [Revisión local de realizados](docs/revision-realizados-2026-11-10.md): corrección del logout
+  del panel y 71 pruebas entre Usuarios, Notificaciones, Flutter y panel; Docker no estaba
+  disponible durante esa revisión.
+- [Verificación de la demo del Sprint 3](docs/qa-sprint-3.md): entorno Docker aislado,
+  74 pruebas de APIs, 59 comprobaciones de integración, 23 de navegador y compilaciones Flutter.
+
+Ambos registros se conservan con sus evidencias y límites. Las pruebas con Android físico,
+Firebase real y la revisión y firma por integrantes continúan pendientes.
+
 ### Avance verificado en Windows — 03/11/2026
 
 Las tres APIs aprobaron **71 pruebas**, Flutter **20**, la integración por Gateway **59** y el
@@ -174,6 +224,7 @@ Copia limpia, con bases de datos desechables y caché Docker existente: `node sc
 
 - [Plan y estado del Sprint 1](docs/sprint-1.md)
 - [Estado del Sprint 2](docs/sprint-2.md) · [verificación](docs/qa-sprint-2.md)
+- [Tareas y estado del Sprint 3](docs/sprint-3.md) · [verificación](docs/qa-sprint-3.md)
 - [Decisiones de arquitectura (ADR)](docs/adr/README.md)
 - Contratos OpenAPI: [usuarios](docs/openapi/usuarios.yaml) · [ubicación](docs/openapi/ubicacion.yaml) · [notificaciones](docs/openapi/notificaciones.yaml)
 - [Formato del evento `ruta.actualizada`](docs/eventos/ruta.actualizada.json)

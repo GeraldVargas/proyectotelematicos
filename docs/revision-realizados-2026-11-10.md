@@ -1,5 +1,11 @@
 # Revisión de tareas marcadas como realizadas — 10/11/2026
 
+> Registro de la revisión local realizada sin Docker. Se conserva completo, incluida la
+> corrección de logout y las 71 pruebas de sus cuatro suites. La integración incorpora además
+> [la verificación de demo con Docker](qa-sprint-3.md): 74 pruebas de APIs, 59 comprobaciones
+> de integración y 23 de navegador, con su propia evidencia. Son ejecuciones y alcances distintos;
+> los bloqueos descritos aquí corresponden a esta revisión y no invalidan aquella evidencia.
+
 Se contrastaron las marcas de [Sprint 1](sprint-1.md), [Sprint 2](sprint-2.md),
 [Sprint 3](sprint-3.md) y el [avance del 03/11](avance-sprints-2026-11-03.md)
 con el código, las pruebas ejecutables y los informes guardados. Se encontró y corrigió

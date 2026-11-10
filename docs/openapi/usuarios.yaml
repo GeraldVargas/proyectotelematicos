@@ -30,12 +30,23 @@ paths:
                 email: { type: string, format: email, example: maria@correo.bo }
                 password: { type: string, minLength: 8, example: clave12345 }
                 password_confirmation: { type: string, example: clave12345 }
+            example:
+              name: María Quispe
+              email: maria@correo.bo
+              password: clave12345
+              password_confirmation: clave12345
       responses:
         '201':
           description: Usuario creado y sesión iniciada
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Tokens' }
+              example:
+                token_type: Bearer
+                access_token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImNvbGNhdHJ1ZmlzLTEifQ.ejemplo
+                expires_in: 3600
+                refresh_token: refresh_token_de_ejemplo
+                usuario: { id: 3, name: María Quispe, email: maria@correo.bo, rol: usuario, activo: true }
         '422': { $ref: '#/components/responses/Validacion' }
   /api/usuarios/login:
     post:
@@ -53,12 +64,21 @@ paths:
               properties:
                 email: { type: string, format: email, example: demo@colcatrufis.local }
                 password: { type: string, example: demo12345 }
+            example:
+              email: demo@colcatrufis.local
+              password: demo12345
       responses:
         '200':
           description: Credenciales correctas
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Tokens' }
+              example:
+                token_type: Bearer
+                access_token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImNvbGNhdHJ1ZmlzLTEifQ.ejemplo
+                expires_in: 3600
+                refresh_token: refresh_token_de_ejemplo
+                usuario: { id: 2, name: Usuario Demo, email: demo@colcatrufis.local, rol: usuario, activo: true }
         '401': { $ref: '#/components/responses/NoAutorizado' }
         '403':
           description: Usuario desactivado
@@ -82,12 +102,20 @@ paths:
               required: [refresh_token]
               properties:
                 refresh_token: { type: string }
+            example:
+              refresh_token: refresh_token_de_ejemplo
       responses:
         '200':
           description: Nuevo par de tokens
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Tokens' }
+              example:
+                token_type: Bearer
+                access_token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImNvbGNhdHJ1ZmlzLTEifQ.token_renovado
+                expires_in: 3600
+                refresh_token: refresh_token_rotado_de_ejemplo
+                usuario: { id: 2, name: Usuario Demo, email: demo@colcatrufis.local, rol: usuario, activo: true }
         '401': { $ref: '#/components/responses/NoAutorizado' }
   /api/usuarios/perfil:
     get:
@@ -100,6 +128,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Usuario' }
+              example: { id: 2, name: Usuario Demo, email: demo@colcatrufis.local, rol: usuario, activo: true }
         '401': { $ref: '#/components/responses/NoAutorizado' }
   /api/usuarios/perfil/{id}:
     get:
@@ -115,6 +144,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Usuario' }
+              example: { id: 1, name: Administrador, email: admin@colcatrufis.local, rol: admin, activo: true }
         '401': { $ref: '#/components/responses/NoAutorizado' }
         '403':
           description: Perfil ajeno sin el rol necesario
@@ -149,6 +179,14 @@ paths:
                   data:
                     type: array
                     items: { $ref: '#/components/schemas/Usuario' }
+              example:
+                current_page: 1
+                per_page: 20
+                total: 2
+                last_page: 1
+                data:
+                  - { id: 1, name: Administrador, email: admin@colcatrufis.local, rol: admin, activo: true }
+                  - { id: 2, name: Usuario Demo, email: demo@colcatrufis.local, rol: usuario, activo: true }
         '401': { $ref: '#/components/responses/NoAutorizado' }
         '403':
           description: El usuario autenticado no tiene rol admin
@@ -173,6 +211,8 @@ paths:
               type: object
               properties:
                 refresh_token: { type: string }
+            example:
+              refresh_token: refresh_token_de_ejemplo
       responses:
         '204': { description: Sesión cerrada }
         '401': { $ref: '#/components/responses/NoAutorizado' }

@@ -94,7 +94,7 @@ jobs:
         run: python3 -c "import json; d=json.load(open('services/api-ubicacion/database/data/rutas_colcapirhua.geojson')); assert d['type']=='FeatureCollection' and len(d['features'])>=3"
 
   admin-web:
-    name: Panel web (sintaxis)
+    name: Panel web (sintaxis y sesión)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -102,6 +102,7 @@ jobs:
         with:
           node-version: "20"
       - run: node --check admin-web/app.js && node --check admin-web/config.js
+      - run: node --test scripts/panel-session.test.mjs
 
   flutter:
     name: Flutter (red, mocks y compilacion web)

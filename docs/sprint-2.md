@@ -1,5 +1,8 @@
 # Sprint 2 — estado al 03/11/2026
 
+Revisión posterior: [comprobación de realizados del 10/11](revision-realizados-2026-11-10.md).
+Incluye pruebas repetidas, una corrección del panel y los límites por Docker no disponible.
+
 Las APIs, el panel y el flujo hasta FCM simulado están implementados y verificados ([evidencia](qa-sprint-2.md)).
 Flutter resolvió dependencias, aprobó 20 pruebas y compiló para web y Android ARM64 debug. El análisis no encontró errores;
 mantiene advertencias históricas. Ver [qué marcar en el informe y cómo demostrarlo](avance-sprints-2026-11-03.md).

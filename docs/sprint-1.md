@@ -6,6 +6,9 @@ un mapa vectorial en Flutter. Queda medido el rendimiento actual del monolito co
 
 ## Actualización del 03/11/2026
 
+Revisión posterior: [comprobación de realizados del 10/11](revision-realizados-2026-11-10.md),
+con nuevas ejecuciones de pruebas y corrección del cierre de sesión del panel.
+
 El estado actual y las indicaciones para marcar tareas están en
 [avance del 03/11](avance-sprints-2026-11-03.md). La evidencia del 27/10 se conserva en
 [QA del sprint 1](qa-sprint-1.md), junto a una nota de las nuevas comprobaciones.

@@ -67,14 +67,21 @@
 
   /** Revoca el refresh token en el servidor. Si falla, la sesión local se cierra igual. */
   async function revocarSesion() {
-    const actual = sesion.leer();
-    if (!actual?.access_token) return;
     try {
-      await fetch(`${CFG.gatewayUrl}/api/usuarios/sesion`, {
+      // Una consulta del mapa puede estar rotando el refresh al pulsar Salir.
+      if (renovando) await renovando;
+      const enviar = (actual) => fetch(`${CFG.gatewayUrl}/api/usuarios/sesion`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${actual.access_token}` },
         body: JSON.stringify({ refresh_token: actual.refresh_token }),
       });
+      const actual = sesion.leer();
+      if (!actual?.access_token) return;
+      const res = await enviar(actual);
+      if (res.status === 401 && (await renovar())) {
+        // Usar el refresh recién emitido: el anterior ya se consumió al renovar.
+        await enviar(sesion.leer());
+      }
     } catch { /* sin conexión: el refresh token expirará solo */ }
   }
 

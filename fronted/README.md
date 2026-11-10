@@ -37,8 +37,15 @@ flutter run --dart-define=GATEWAY_URL=http://IP-DE-TU-PC:8080
 No uses `localhost` en un teléfono. Las compilaciones debug permiten HTTP local; release requiere
 HTTPS. Usuario de demo: `demo@colcatrufis.local` / `demo12345`.
 Al cambiar un `--dart-define`, detén y vuelve a ejecutar o compilar la app; hot reload no cambia
-estos valores. La opción «Continuar sin iniciar sesión» abre la app clásica y usa el monolito
-configurado en `lib/config/app_config.dart`; `GATEWAY_URL` solo cambia el cliente de microservicios.
+estos valores. Hay una sola interfaz: la app clásica, conservando su diseño y sidebar.
+El login y una sesión guardada abren esa misma pantalla con rutas, paradas y radiotaxis del
+Gateway (`GATEWAY_URL`). Las posiciones se actualizan cada 30 segundos. El sidebar incluye
+«Notificaciones» para gestionar avisos por línea, «Cerrar sesión» y «Actualizar datos» para
+recargar las ediciones del administrador. En el detalle de ruta se muestran nombre, estado,
+tarifa, horario, frecuencia y extremos cuando están registrados.
+«Continuar sin iniciar sesión» usa la misma pantalla con los datos públicos del monolito
+configurado en `lib/config/app_config.dart`; Notificaciones solicita iniciar sesión.
+Las funciones exclusivas del monolito (normativas y reclamos) conservan su API original.
 
 Para trabajar sin backend:
 

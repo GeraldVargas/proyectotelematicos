@@ -141,6 +141,33 @@ paths:
                         type: array
                         items: { $ref: '#/components/schemas/ParadaFeature' }
         '401': { $ref: '#/components/responses/NoAutorizado' }
+  /api/ubicacion/paradas/{id}:
+    put:
+      operationId: editarParada
+      tags: [Paradas]
+      summary: Actualizar nombre, descripción y coordenadas (solo admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, lat, lng]
+              properties:
+                nombre: { type: string, maxLength: 255 }
+                descripcion: { type: string, nullable: true, maxLength: 2000 }
+                lat: { type: number, minimum: -90, maximum: 90 }
+                lng: { type: number, minimum: -180, maximum: 180 }
+      responses:
+        '200':
+          description: FeatureCollection con la parada actualizada y sus líneas asociadas
+        '401': { description: Sin sesión }
+        '403': { description: Requiere rol admin }
+        '404': { description: Parada inexistente }
+        '422': { description: Datos inválidos }
+
   /api/ubicacion/paradas/cercanas:
     get:
       operationId: buscarParadasCercanas
@@ -216,6 +243,9 @@ paths:
                 lat: { type: number, minimum: -90, maximum: 90, example: -17.3895 }
                 lng: { type: number, minimum: -180, maximum: 180, example: -66.2405 }
                 disponible: { type: boolean }
+                nombre: { type: string, maxLength: 255 }
+                sindicato: { type: string, nullable: true, maxLength: 255 }
+                telefono: { type: string, nullable: true, maxLength: 40 }
       responses:
         '200':
           description: Posición guardada

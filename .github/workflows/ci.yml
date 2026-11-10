@@ -102,7 +102,7 @@ jobs:
         with:
           node-version: "20"
       - run: node --check admin-web/app.js && node --check admin-web/config.js
-      - run: node --test scripts/panel-session.test.mjs
+      - run: node --test scripts/panel-session.test.mjs scripts/panel-data.test.mjs
 
   flutter:
     name: Flutter (red, mocks y compilacion web)

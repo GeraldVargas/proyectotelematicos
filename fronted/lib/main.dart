@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:colcatrufis/screens/splash_screen.dart';  // Asegúrate de importar la pantalla de inicio
 import 'package:colcatrufis/screens/home_screen.dart';    // Asegúrate de importar la pantalla principal
 import 'package:colcatrufis/features/login/login_screen.dart';
-import 'package:colcatrufis/features/mapa/mapa_rutas_screen.dart';
 import 'package:colcatrufis/features/notificaciones/push_service.dart';
 import 'package:colcatrufis/features/notificaciones/suscripciones_screen.dart';
 
@@ -24,9 +23,9 @@ class MyApp extends StatelessWidget {
       home: SplashScreen(), // No necesitas const aquí
       routes: {
         '/home': (context) => HomeScreen(), // Aquí tampoco es necesario const
-        // Arquitectura de microservicios (Sprint 1): login JWT + mapa vectorial vía Gateway
+        // Una sola interfaz para visitantes y sesiones del Gateway.
         '/login': (context) => const LoginScreen(),
-        '/mapa': (context) => const MapaRutasScreen(),
+        '/mapa': (context) => HomeScreen(),
         '/suscripciones': (context) => const SuscripcionesScreen(),
       },
     );

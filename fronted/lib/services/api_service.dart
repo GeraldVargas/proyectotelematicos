@@ -48,6 +48,17 @@ class ApiService {
     }
   }
 
+  Future<List<dynamic>> getClassicList(String path) async {
+    final data = await _get(path);
+    if (data is List) return data;
+    if (data is Map) {
+      final nested = data['data'] ?? data;
+      final key = path.split('/').last;
+      if (nested is Map && nested[key] is List) return nested[key] as List;
+    }
+    throw Exception('Formato inesperado para $path');
+  }
+
   // =========================
   // ENDPOINTS (según tu api.php)
   // =========================

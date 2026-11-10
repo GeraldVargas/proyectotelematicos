@@ -103,6 +103,61 @@
     return cuerpo;
   }
 
+  let puntosEditables = [];
+  function seleccionarRegistroPunto() {
+    const form = $('form-punto');
+    const feature = puntosEditables.find(f => String(f.id) === $('punto-id').value);
+    $('punto-guardar').disabled = !feature;
+    if (!feature) return;
+    for (const campo of ['nombre', 'descripcion', 'sindicato', 'telefono']) {
+      form.elements[campo].value = feature.properties[campo] ?? '';
+    }
+    form.elements.lat.value = feature.geometry.coordinates[1];
+    form.elements.lng.value = feature.geometry.coordinates[0];
+  }
+  async function cargarPuntos() {
+    const tipo = $('punto-tipo').value;
+    puntosEditables = [];
+    $('punto-id').replaceChildren();
+    $('punto-guardar').disabled = true;
+    $('punto-parada').hidden = tipo !== 'paradas';
+    $('punto-taxi').hidden = tipo !== 'radiotaxis';
+    try {
+      const datos = await api(`/api/ubicacion/${tipo}`);
+      if ($('punto-tipo').value !== tipo) return;
+      puntosEditables = datos.features;
+      for (const feature of puntosEditables) {
+        const option = document.createElement('option');
+        option.value = feature.id;
+        option.textContent = feature.properties.nombre;
+        $('punto-id').append(option);
+      }
+      seleccionarRegistroPunto();
+      $('punto-estado').textContent = puntosEditables.length ? '' : 'No hay registros disponibles.';
+    } catch (error) { $('punto-estado').textContent = error.message; }
+  }
+  $('puntos-cargar').addEventListener('click', cargarPuntos);
+  $('punto-tipo').addEventListener('change', cargarPuntos);
+  $('punto-id').addEventListener('change', seleccionarRegistroPunto);
+  $('form-punto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const datos = new FormData(e.target);
+    const tipo = datos.get('tipo');
+    const id = datos.get('id');
+    if (!puntosEditables.some(f => String(f.id) === id)) return;
+    const cuerpo = { nombre: datos.get('nombre'), lat: Number(datos.get('lat')), lng: Number(datos.get('lng')) };
+    if (tipo === 'paradas') cuerpo.descripcion = datos.get('descripcion') || null;
+    else { cuerpo.sindicato = datos.get('sindicato') || null; cuerpo.telefono = datos.get('telefono') || null; }
+    $('punto-guardar').disabled = true;
+    try {
+      await api(`/api/ubicacion/${tipo}/${id}${tipo === 'radiotaxis' ? '/posicion' : ''}`, { metodo: 'PUT', cuerpo });
+      await cargarDatos();
+      await cargarPuntos();
+      $('punto-estado').textContent = 'Guardado. En la app clásica usa Actualizar datos.';
+    } catch (error) { $('punto-estado').textContent = error.message; }
+    finally { $('punto-guardar').disabled = !puntosEditables.length; }
+  });
+
   // ---------- Vistas ----------
 
   function mostrarLogin(mensaje) {
@@ -137,6 +192,7 @@
     $('vista-login').hidden = true;
     $('vista-mapa').hidden = false;
     $('seccion-usuarios').hidden = usuario.rol !== 'admin';
+    $('edicion-puntos').hidden = usuario.rol !== 'admin';
     estado('Cargando rutas…');
 
     mapa = new maplibregl.Map({
@@ -352,7 +408,7 @@
     $('editor-linea').textContent = feature.properties.linea;
     const form = $('form-ruta');
     form.reset();
-    for (const campo of ['nombre', 'estado', 'color']) form.elements[campo].value = feature.properties[campo];
+    for (const campo of ['nombre', 'estado', 'color', 'sindicato', 'horario', 'tarifa', 'frecuencia_min']) form.elements[campo].value = feature.properties[campo] ?? '';
     $('editor-error').hidden = true;
     $('editor-ruta').hidden = false;
     mapa.addSource('edicion', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -455,6 +511,9 @@
       await api(`/api/ubicacion/rutas/${editor.feature.id}`, { metodo: 'PUT', cuerpo: {
         geometry: { type: 'LineString', coordinates: editor.coordenadas },
         nombre: datos.get('nombre'), estado: datos.get('estado'), color: datos.get('color'), descripcion: datos.get('descripcion'),
+        sindicato: datos.get('sindicato') || null, horario: datos.get('horario') || null,
+        tarifa: datos.get('tarifa') === '' ? null : Number(datos.get('tarifa')),
+        frecuencia_min: datos.get('frecuencia_min') === '' ? null : Number(datos.get('frecuencia_min')),
       } });
       cancelarEdicion();
       await cargarDatos();

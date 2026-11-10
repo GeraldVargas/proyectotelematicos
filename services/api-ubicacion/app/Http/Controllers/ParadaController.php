@@ -25,6 +25,25 @@ class ParadaController extends Controller
         return $this->respuesta($paradas);
     }
 
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $parada = Parada::findOrFail($id);
+        $datos = $request->validate([
+            'nombre' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:2000'],
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lng' => ['required', 'numeric', 'between:-180,180'],
+        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($parada, $datos) {
+            $parada->update(\Illuminate\Support\Arr::only($datos, ['nombre', 'descripcion']));
+            \Illuminate\Support\Facades\DB::update(
+                'UPDATE paradas SET geom = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
+                [$datos['lng'], $datos['lat'], $parada->id]
+            );
+        });
+        return $this->respuesta(Parada::conGeoJson()->with('rutas:id,linea,color')->whereKey($id)->get());
+    }
+
     public function cercanas(Request $request): JsonResponse
     {
         $datos = $request->validate([

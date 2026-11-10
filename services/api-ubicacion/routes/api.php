@@ -15,3 +15,5 @@ Route::get('/paradas/cercanas', [ParadaController::class, 'cercanas']);
 Route::put('/rutas/{id}', [RutaController::class, 'update'])->whereNumber('id')->middleware(AdministradorDelGateway::class);
 Route::get('/radiotaxis', [RadiotaxiController::class, 'index']);
 Route::put('/radiotaxis/{id}/posicion', [RadiotaxiController::class, 'actualizarPosicion'])->whereNumber('id')->middleware(AdministradorDelGateway::class);
+
+Route::put('/paradas/{id}', [ParadaController::class, 'update'])->whereNumber('id')->middleware(AdministradorDelGateway::class);

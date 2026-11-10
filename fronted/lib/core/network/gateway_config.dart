@@ -5,7 +5,7 @@
 ///   flutter run --dart-define=USE_MOCKS=true     (sin backend, con datos del contrato OpenAPI)
 ///
 /// Por defecto apunta al Gateway local visto desde el emulador de Android (10.0.2.2 = PC host).
-/// La app clásica (HomeScreen) sigue usando AppConfig.baseUrl del monolito.
+/// HomeScreen usa el Gateway con sesión y el monolito para visitantes.
 class GatewayConfig {
   static const String baseUrl = String.fromEnvironment(
     'GATEWAY_URL',

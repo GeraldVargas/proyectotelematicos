@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await Servicios.auth.login(_email.text.trim(), _password.text);
-      if (mounted) Navigator.pushReplacementNamed(context, '/mapa');
+      if (mounted) Navigator.pushReplacementNamed(context, '/home');
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
     } finally {

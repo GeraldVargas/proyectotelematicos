@@ -63,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Con sesión JWT guardada va directo al mapa; si no, al login del Gateway
     final haySesion = Servicios.auth.haySesion();
     Timer(const Duration(milliseconds: 2800), () async {
-      final destino = await haySesion ? '/mapa' : '/login';
+      final destino = await haySesion ? '/home' : '/login';
       if (mounted) Navigator.pushReplacementNamed(context, destino);
     });
   }

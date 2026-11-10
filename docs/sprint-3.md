@@ -152,3 +152,33 @@ aquella revisión, no anulan las evidencias de demo incorporadas:
 | Repetir la comparación en PC x86 | **Pendiente: requiere Docker/k6** | No se levantaron contenedores en esta PC. |
 | Validar 100 usuarios concurrentes (RNF6) | **Pendiente: requiere Docker/k6** | El escenario admite `VUS=100`, pero no se ejecutó. |
 | Medir Gateway y PostGIS con perfilador/`EXPLAIN ANALYZE` | **Pendiente: requiere Docker/PostGIS activo** | La revisión actual fue estática. |
+
+## Unificación de la interfaz Flutter
+
+El login y la sesión guardada abren ahora la interfaz clásica. La ruta antigua `/mapa`
+también lleva a esa pantalla, sin un segundo frontend. Se conserva el diseño del mapa y
+sidebar y se incorpora **Notificaciones** (suscripciones por línea) junto al acceso de sesión.
+Las rutas, paradas y radiotaxis del Gateway se adaptan al formato de los componentes clásicos;
+los radiotaxis se refrescan cada 30 segundos. La navegación sin sesión conserva la API pública
+del monolito. No se mezclan sus identificadores con los del Gateway al consultar detalles.
+
+El panel Docker conserva la edición de trazado y la publicación transaccional de eventos.
+Su formulario de rutas ahora permite sindicato, horario, tarifa y frecuencia; dispone además
+de edición de nombre, descripción y coordenadas de paradas, y nombre, sindicato, teléfono y
+posición de radio taxis disponibles. Son ediciones de registros existentes, no altas de nuevas
+rutas o paradas. Las relaciones parada–ruta se conservan. Las escrituras requieren rol admin.
+En Flutter, «Actualizar datos» invalida el catálogo y carga los cambios; los detalles muestran
+los metadatos de las rutas y aceptan el horario textual del Gateway.
+
+No se levantó Docker en esta revisión por la restricción de espacio del equipo. Las pruebas
+PostGIS añadidas quedan preparadas para CI; no se consideran ejecutadas localmente. El modo
+simulado verifica la adaptación Flutter sin sustituir una prueba con contenedores reales.
+
+Verificación local de la unificación: 23 pruebas Flutter existentes y de adaptación pasaron;
+se añadió y pasó además la prueba de recarga de metadatos y horario (24 casos en total).
+Pasaron 7 pruebas Node del panel (sesión y formularios), la sintaxis PHP de controladores,
+rutas y pruebas nuevas, y el análisis Flutter sin errores (194 avisos/recomendaciones).
+La compilación web completa no se pudo confirmar: el intento agotó la memoria durante
+la comprobación WebAssembly. No se declara validación visual ni ejecución Docker/PostGIS.
+Las nuevas pruebas PostGIS se incluyen en el job existente de CI y las pruebas del panel
+se incorporaron al job Node; no se ejecutó CI desde esta sesión.

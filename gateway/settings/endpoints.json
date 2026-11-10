@@ -17,6 +17,7 @@
     { "endpoint": "/api/ubicacion/rutas", "method": "GET", "servicio": "ubicacion", "query": ["linea", "sindicato", "estado"] },
     { "endpoint": "/api/ubicacion/rutas/{id}", "method": "GET", "servicio": "ubicacion" },
     { "endpoint": "/api/ubicacion/rutas/{id}", "method": "PUT", "servicio": "ubicacion" },
+    { "endpoint": "/api/ubicacion/paradas/{id}", "method": "PUT", "servicio": "ubicacion" },
     { "endpoint": "/api/ubicacion/paradas", "method": "GET", "servicio": "ubicacion", "query": ["ruta_id"] },
     { "endpoint": "/api/ubicacion/paradas/cercanas", "method": "GET", "servicio": "ubicacion", "query": ["lat", "lng", "radio", "limite"] },
     { "endpoint": "/api/ubicacion/radiotaxis", "method": "GET", "servicio": "ubicacion" },

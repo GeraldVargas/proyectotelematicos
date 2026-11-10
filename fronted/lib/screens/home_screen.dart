@@ -12,7 +12,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/api_service.dart';
+import '../services/classic_transport_service.dart';
+import '../core/servicios.dart';
+import '../core/network/gateway_config.dart';
 import '../config/app_config.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -75,7 +77,65 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isTrufiSelected = true;
   final MapController _mapController = MapController();
 
-  final ApiService _apiService = ApiService(baseUrl: AppConfig.baseUrl);
+  final ClassicTransportService _apiService = ClassicTransportService(
+    baseUrl: AppConfig.baseUrl, ubicacion: Servicios.ubicacion);
+  StreamSubscription<void>? _sesionExpirada;
+  Timer? _refrescoTaxis;
+  bool _actualizandoTaxis = false;
+  List<Marker> _paradasTrufi = [];
+
+  Future<void> _recargarDatos() async {
+    Navigator.pop(context);
+    _apiService.invalidarCatalogo();
+    await Future.wait([_fetchSindicatos(), _fetchTrufis(), _actualizarTaxis(), _cargarParadasTrufi()]);
+    await _cargarTodasLasRutas();
+    if (_selectedTrufiId != null && mounted) {
+      await _mostrarRutaDeUnTrufi(_selectedTrufiId!, nombreLinea: _selectedTrufiName);
+    }
+  }
+
+  Future<void> _abrirNotificaciones() async {
+    Navigator.pop(context);
+    if (!await Servicios.auth.haySesion()) {
+      if (mounted) Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+    if (mounted) Navigator.pushNamed(context, '/suscripciones');
+  }
+
+  Future<void> _cerrarSesion() async {
+    _refrescoTaxis?.cancel();
+    await Servicios.push.detener();
+    await Servicios.auth.logout();
+    if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+  }
+
+  Future<void> _actualizarTaxis() async {
+    if (_actualizandoTaxis || !mounted) return;
+    _actualizandoTaxis = true;
+    try {
+      await _fetchRadioTaxis();
+      if (mounted) _aplicarFiltroParadas();
+    } finally {
+      _actualizandoTaxis = false;
+    }
+  }
+
+  Future<void> _cargarParadasTrufi() async {
+    if (!_apiService.useGateway) return;
+    try {
+      final datos = await _apiService.getUbicacionesTodas();
+      if (!mounted) return;
+      setState(() => _paradasTrufi = datos.map((p) => Marker(
+        point: LatLng((p['latitud'] as num).toDouble(), (p['longitud'] as num).toDouble()),
+        width: 18, height: 18,
+        child: Tooltip(message: '${p['nombre']}', child: const Icon(Icons.circle, size: 10, color: kPrimary)),
+      )).toList());
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudieron cargar las paradas.')));
+    }
+  }
 
   Position? _currentPosition;
 
@@ -444,11 +504,25 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_langChangeListener != null) {
       AppSettings.language.removeListener(_langChangeListener!);
     }
+    _sesionExpirada?.cancel();
+    _refrescoTaxis?.cancel();
     _positionStream?.cancel();
     super.dispose();
   }
 
   Future<void> _initAll() async {
+    _apiService.useGateway = await Servicios.auth.haySesion();
+    if (!mounted) return;
+    if (_apiService.useGateway) {
+      _sesionExpirada = Servicios.gateway.sesionExpirada.listen((_) {
+        _refrescoTaxis?.cancel();
+        Servicios.push.detener();
+        if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+      });
+      Servicios.push.iniciar();
+      _refrescoTaxis = Timer.periodic(GatewayConfig.refrescoRadiotaxis, (_) => _actualizarTaxis());
+    }
+
     await _cargarHistorial();
 
     await _loadGeoJsonZona();
@@ -462,6 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ]);
 
       await _cargarTodasLasRutas();
+      await _cargarParadasTrufi();
 
       await _getCurrentLocation();
 
@@ -564,31 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoadingSindicatos = true;
       });
 
-      final res = await http.get(
-        Uri.parse("${AppConfig.baseUrl}/sindicatos"),
-        headers: const {"Accept": "application/json"},
-      );
-
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception("HTTP ${res.statusCode}");
-      }
-
-      final body = jsonDecode(res.body);
-      List<dynamic> data = [];
-
-      if (body is List) {
-        data = body;
-      } else if (body is Map) {
-        if (body["data"] is Map && body["data"]["sindicatos"] is List) {
-          data = body["data"]["sindicatos"] as List;
-        } else if (body["sindicatos"] is List) {
-          data = body["sindicatos"] as List;
-        } else if (body["data"] is List) {
-          data = body["data"] as List;
-        } else if (body["success"] == true && body["data"] is List) {
-          data = body["data"] as List;
-        }
-      }
+      final data = await _apiService.getSindicatos();
 
       if (!mounted) return;
       setState(() {
@@ -614,31 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() => _isLoadingRadiotaxis = true);
 
-      final res = await http.get(
-        Uri.parse("${AppConfig.baseUrl}/radiotaxis"),
-        headers: const {"Accept": "application/json"},
-      );
-
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception("HTTP ${res.statusCode}");
-      }
-
-      final body = jsonDecode(res.body);
-      List<dynamic> data = [];
-
-      if (body is List) {
-        data = body;
-      } else if (body is Map) {
-        if (body["data"] is Map && body["data"]["radiotaxis"] is List) {
-          data = body["data"]["radiotaxis"] as List;
-        } else if (body["radiotaxis"] is List) {
-          data = body["radiotaxis"] as List;
-        } else if (body["data"] is List) {
-          data = body["data"] as List;
-        } else if (body["success"] == true && body["data"] is List) {
-          data = body["data"] as List;
-        }
-      }
+      final data = await _apiService.getRadioTaxis();
 
       final radioTaxis = data.map((e) => e as Map<String, dynamic>).toList();
 
@@ -681,31 +708,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() => _isLoadingTrufis = true);
 
-      final res = await http.get(
-        Uri.parse("${AppConfig.baseUrl}/trufis"),
-        headers: const {"Accept": "application/json"},
-      );
-
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception("HTTP ${res.statusCode}");
-      }
-
-      final body = jsonDecode(res.body);
-      List<dynamic> data = [];
-
-      if (body is List) {
-        data = body;
-      } else if (body is Map) {
-        if (body["data"] is Map && body["data"]["trufis"] is List) {
-          data = body["data"]["trufis"] as List;
-        } else if (body["trufis"] is List) {
-          data = body["trufis"] as List;
-        } else if (body["data"] is List) {
-          data = body["data"] as List;
-        } else if (body["success"] == true && body["data"] is List) {
-          data = body["data"] as List;
-        }
-      }
+      final data = await _apiService.getTrufis();
 
       final trufis = data.map((e) => e as Map<String, dynamic>).toList();
 
@@ -742,23 +745,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() => _isLoadingParadas = true);
 
-      final res = await http.get(
-        Uri.parse("${AppConfig.baseUrl}/radiotaxis/paradas"),
-        headers: const {"Accept": "application/json"},
-      );
-
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception("HTTP ${res.statusCode}");
-      }
-
-      final body = jsonDecode(res.body);
-      List<dynamic> data = [];
-
-      if (body is List) {
-        data = body;
-      } else if (body is Map && body["data"] is List) {
-        data = body["data"] as List;
-      }
+      final data = await _apiService.getParadasRadiotaxis();
 
       if (!mounted) return;
       setState(() {
@@ -1821,6 +1808,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _mostrarInfoRuta(String lineName, String? sindicatoName, int idtrufi) {
+    final datosRuta = _trufis.where((t) => t['idtrufi'] == idtrufi).firstOrNull;
+
     final isDarkMode = AppSettings.darkMode.value;
     final bg = isDarkMode ? const Color(0xFF0F172A) : Colors.white;
     final subTextColor = isDarkMode ? Colors.white70 : Colors.black54;
@@ -1876,6 +1865,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
+                        if (_apiService.useGateway && datosRuta != null)
+                          Text([
+                            if (datosRuta['nombre'] != null) '${datosRuta['nombre']}',
+                            if (datosRuta['estado'] != null) 'Estado: ${datosRuta['estado']}',
+                            if (datosRuta['tarifa'] != null) 'Tarifa: Bs ${datosRuta['tarifa']}',
+                            if (datosRuta['horario'] != null) 'Horario: ${datosRuta['horario']}',
+                            if (datosRuta['frecuencia_min'] != null) 'Frecuencia: ${datosRuta['frecuencia_min']} min',
+                            if (datosRuta['desde'] != null) 'Desde: ${datosRuta['desde']}',
+                            if (datosRuta['hasta'] != null) 'Hasta: ${datosRuta['hasta']}',
+                          ].join('\n'), style: TextStyle(color: subTextColor, fontSize: 13)),
                         if (sindicatoName != null &&
                             sindicatoName.trim().isNotEmpty) ...[
                           const SizedBox(height: 4),
@@ -2321,7 +2320,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!mounted) return;
         setState(() {
           _selectedTrufiHorario = (horarioData['hora_entrada'] != null ||
-                  horarioData['hora_salida'] != null)
+                  horarioData['hora_salida'] != null || horarioData['horario'] != null)
               ? horarioData
               : null;
         });
@@ -2367,6 +2366,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _registrarSeleccionTrufi(int idtrufi) async {
+    if (_apiService.useGateway) return;
     try {
       await http.post(
         Uri.parse("${AppConfig.baseUrl}/trufis/$idtrufi/seleccion"),
@@ -2673,7 +2673,7 @@ class _HomeScreenState extends State<HomeScreen> {
             radiotaxiFull["lon"]);
       }
 
-      if (lat == null || lng == null || direccion.isEmpty || telefono.isEmpty) {
+      if (!_apiService.useGateway && (lat == null || lng == null || direccion.isEmpty || telefono.isEmpty)) {
         try {
           final detalleRes = await http.get(
             Uri.parse("${AppConfig.baseUrl}/radiotaxis/$idradiotaxi"),
@@ -2723,7 +2723,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
-      if (lat == null || lng == null) {
+      if (!_apiService.useGateway && (lat == null || lng == null)) {
         try {
           final paradaRes = await http.get(
             Uri.parse("${AppConfig.baseUrl}/radiotaxis/$idradiotaxi/parada"),
@@ -4337,6 +4337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           CircleLayer(circles: _buildRadioCircle()),
 
                         if (isTrufiSelected) ...[
+                          MarkerLayer(markers: _paradasTrufi),
                           PolylineLayer(
                             polylines: _rutasVisibles,
                           ),
@@ -5153,9 +5154,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final salida = _selectedTrufiHorario?['hora_salida']?.toString() ?? '';
     String fmt(String v) => v.length >= 5 ? v.substring(0, 5) : v;
 
-    final bool tieneHorario = entrada.isNotEmpty || salida.isNotEmpty;
+    final horarioLibre = _selectedTrufiHorario?['horario']?.toString() ?? '';
+    final bool tieneHorario = entrada.isNotEmpty || salida.isNotEmpty || horarioLibre.isNotEmpty;
     String horarioStr;
-    if (entrada.isNotEmpty && salida.isNotEmpty) {
+    if (horarioLibre.isNotEmpty) {
+      horarioStr = horarioLibre;
+    } else if (entrada.isNotEmpty && salida.isNotEmpty) {
       horarioStr = '${fmt(entrada)}\u2013${fmt(salida)}';
     } else if (entrada.isNotEmpty) {
       horarioStr = '${t("schedule_from")} ${fmt(entrada)}';
@@ -6152,6 +6156,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 Divider(
                     height: 1, indent: 20, endIndent: 20, color: dividerColor),
                 sectionHeader("Información y Servicios"),
+                drawerTile(icon: Icons.refresh, title: 'Actualizar datos',
+                  subtitle: 'Cargar cambios del administrador', onTap: _recargarDatos),
+                drawerTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notificaciones',
+                  subtitle: 'Avisos por línea',
+                  onTap: _abrirNotificaciones,
+                ),
+                drawerTile(
+                  icon: _apiService.useGateway ? Icons.logout : Icons.login,
+                  title: _apiService.useGateway ? 'Cerrar sesión' : 'Iniciar sesión',
+                  onTap: () {
+                    if (_apiService.useGateway) {
+                      _cerrarSesion();
+                    } else {
+                      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+                    }
+                  },
+                ),
                 drawerTile(
                   icon: Icons.history,
                   title: t("history"),

@@ -34,12 +34,15 @@ class RadiotaxiController extends Controller
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
             'disponible' => ['sometimes', 'boolean'],
+            'nombre' => ['sometimes', 'required', 'string', 'max:255'],
+            'sindicato' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'telefono' => ['sometimes', 'nullable', 'string', 'max:40'],
         ]);
 
-        if (array_key_exists('disponible', $datos)) {
-            $radiotaxi->update(['disponible' => $datos['disponible']]);
-        }
-        $radiotaxi->moverA((float) $datos['lng'], (float) $datos['lat']);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($radiotaxi, $datos) {
+            $radiotaxi->update(\Illuminate\Support\Arr::except($datos, ['lat', 'lng']));
+            $radiotaxi->moverA((float) $datos['lng'], (float) $datos['lat']);
+        });
 
         return $this->geojson($this->feature(Radiotaxi::conGeoJson()->findOrFail($id)));
     }

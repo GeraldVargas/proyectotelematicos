@@ -11,6 +11,7 @@
   <!-- Login -->
   <main id="vista-login" class="login" hidden>
     <form id="form-login" class="tarjeta" autocomplete="on">
+      <span class="marca">Transporte en Colcapirhua</span>
       <h1>ColcaTrufis</h1>
       <p class="sub">Panel administrativo</p>
       <label>Correo
@@ -21,7 +22,7 @@
       </label>
       <p id="login-error" class="error" role="alert" hidden></p>
       <button type="submit">Ingresar</button>
-      <p class="nota">Autenticación JWT a través del API Gateway</p>
+      <p class="nota">Ingresa con tu cuenta de administración.</p>
     </form>
   </main>
 
@@ -33,6 +34,7 @@
         <div class="usuario"><span id="usuario-nombre"></span> · <span id="usuario-rol" class="rol"></span></div>
         <button id="btn-salir" class="secundario" type="button">Salir</button>
       </header>
+      <p class="ayuda">Consulta las líneas del mapa. Para modificar su información, selecciona «Editar».</p>
       <h2>Rutas <span id="rutas-total" class="contador"></span></h2>
       <ul id="lista-rutas" class="rutas"></ul>
       <label class="check"><input type="checkbox" id="toggle-paradas" checked> Mostrar paradas</label>
@@ -53,16 +55,18 @@
           <label>Frecuencia (minutos)<input name="frecuencia_min" type="number" min="1" max="1440" step="1"></label>
           <label>Estado<select name="estado"><option value="activa">Activa</option><option value="suspendida">Suspendida</option></select></label>
           <label>Color<input name="color" type="color"></label>
-          <label>Motivo del cambio<textarea name="descripcion" required minlength="5" maxlength="500" placeholder="Describe el cambio para los usuarios suscritos"></textarea></label>
+          <label>Mensaje para los usuarios<textarea name="descripcion" required minlength="5" maxlength="500" placeholder="Ej.: La línea cambia de recorrido por obras en la avenida."></textarea></label>
           <p id="editor-error" class="error" role="alert" hidden></p>
           <div class="herramientas">
-            <button id="editor-guardar" type="submit">Guardar cambio</button>
+            <p class="ayuda">Al guardar la ruta, este mensaje se enviará a quienes siguen la línea.</p>
+            <button id="editor-guardar" type="submit">Guardar y avisar</button>
             <button id="editor-cancelar" type="button" class="secundario">Cancelar</button>
           </div>
         </form>
       </section>
       <section id="edicion-puntos" hidden>
-        <h2>Datos de paradas y radio taxis</h2>
+        <h2>Paradas y radio taxis</h2>
+        <p class="ayuda">Elige el tipo, carga el listado y selecciona el registro que quieres editar.</p>
         <form id="form-punto" class="form-ruta">
           <label>Tipo<select id="punto-tipo" name="tipo"><option value="paradas">Paradas</option><option value="radiotaxis">Radio taxis disponibles</option></select></label>
           <button id="puntos-cargar" type="button" class="secundario">Cargar listado</button>

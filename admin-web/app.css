@@ -1,21 +1,21 @@
 :root {
-  --fondo: #f4f6f8;
+  --fondo: #f2f7f7;
   --tarjeta: #ffffff;
-  --texto: #1d2733;
-  --suave: #5b6876;
-  --borde: #dde3e9;
-  --primario: #0f6cbd;
+  --texto: #163b46;
+  --suave: #58747c;
+  --borde: #d9e7e9;
+  --primario: #09596e;
   --primario-texto: #ffffff;
   --error: #c62828;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --fondo: #12171d;
-    --tarjeta: #1b232c;
+    --fondo: #071e29;
+    --tarjeta: #102f3b;
     --texto: #e6ebf0;
     --suave: #9aa7b4;
-    --borde: #2c3742;
-    --primario: #4aa3f0;
+    --borde: #254550;
+    --primario: #19b7b0;
     --primario-texto: #0b1218;
     --error: #ef9a9a;
   }
@@ -71,7 +71,7 @@ input[type=email], input[type=password], .form-ruta input:not([type=color]), .fo
 .estado { color: var(--suave); font-size: .85rem; min-height: 1.2em; }
 .atribucion { margin-top: auto; font-size: .72rem; color: var(--suave); }
 .mapa { height: 100%; }
-.maplibregl-popup-content { color: #1d2733; }
+.maplibregl-popup-content { color: #163b46; }
 .herramientas { display: flex; gap: .4rem; flex-wrap: wrap; }
 .ayuda { color: var(--suave); font-size: .8rem; }
 .form-ruta { display: grid; gap: .7rem; margin-top: .8rem; }
@@ -93,3 +93,43 @@ button[aria-pressed=true] { background: var(--primario); color: var(--primario-t
 .usuarios { list-style: none; margin: .6rem 0; padding: 0; display: grid; gap: .5rem; font-size: .85rem; }
 .usuarios small { color: var(--suave); }
 .inactivo { color: var(--error); font-size: .75rem; }
+
+/* Identidad visual compartida con la app clásica. */
+:root { --aqua: #19b7b0; }
+button { min-height: 42px; border-radius: 12px; transition: background .15s, box-shadow .15s; }
+button:hover:not(:disabled) { box-shadow: 0 3px 10px #09596e26; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--aqua); outline-offset: 3px;
+}
+input[type=checkbox] { accent-color: var(--primario); width: 18px; height: 18px; }
+.login { background: radial-gradient(ellipse at top, #09596e, #042e3d 65%, #021a22); }
+.login .tarjeta { max-width: 420px; padding: 32px; border-radius: 24px; box-shadow: 0 24px 70px #0004; }
+.login h1 { font-size: 1.7rem; letter-spacing: -.04em; }
+.marca { color: var(--primario); font-size: .72rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.login .sub { padding-bottom: 8px; }
+.layout { grid-template-columns: 360px minmax(0, 1fr); }
+.panel { padding: 20px; gap: 8px; }
+.panel header { border-radius: 18px; background: linear-gradient(135deg, #09596e, #064656); color: white; padding: 20px; gap: 10px; }
+.panel header .usuario { color: #d3eeee; }
+.panel header button { color: white; border-color: #ffffff50; }
+.panel h2 { font-size: 1.05rem; }
+.panel section { padding: 16px; border: 1px solid var(--borde); border-radius: 16px; margin-top: 8px; }
+.panel section h2 { margin-top: 0; }
+.rutas { gap: 8px; }
+.rutas label { padding: 12px; border: 1px solid var(--borde); border-radius: 12px; }
+.rutas .linea { font-size: .95rem; }
+.rutas .sindicato { margin-top: 3px; }
+.form-ruta { gap: 14px; }
+.form-ruta label { font-size: .87rem; font-weight: 600; }
+.form-ruta input:not([type=color]), .form-ruta select, .form-ruta textarea { min-height: 44px; border-radius: 10px; font-weight: 400; }
+.form-ruta .ayuda { margin: 0; }
+.herramientas { gap: 8px; }
+.ayuda { line-height: 1.6; font-size: .83rem; }
+.estado { background: var(--fondo); border-radius: 10px; padding: 10px 12px; }
+.estado:empty { display: none; }
+.error:not(:empty) { padding: 10px; border-left: 3px solid var(--error); }
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+  .panel { padding: 14px; }
+  .login .tarjeta { padding: 24px; }
+}

@@ -6161,7 +6161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 drawerTile(
                   icon: Icons.notifications_outlined,
                   title: 'Notificaciones',
-                  subtitle: 'Avisos por línea',
+                  subtitle: 'Cambios de rutas y líneas que sigues',
                   onTap: _abrirNotificaciones,
                 ),
                 drawerTile(

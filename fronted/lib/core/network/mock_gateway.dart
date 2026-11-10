@@ -47,6 +47,8 @@ http.Client crearGatewayMock() {
         return http.Response(jsonEncode(data), 200, headers: json);
       case 'GET /api/ubicacion/radiotaxis':
         return http.Response(jsonEncode(_radiotaxisDemo), 200, headers: json);
+      case 'GET /api/notificaciones':
+        return http.Response(jsonEncode({'data': [], 'current_page': 1, 'last_page': 1, 'total': 0}), 200, headers: json);
       case 'GET /api/notificaciones/suscripciones':
         return http.Response(
           jsonEncode([for (final linea in suscripciones) {'id': linea.hashCode, 'linea': linea, 'created_at': '2026-11-02T12:00:00Z'}]),

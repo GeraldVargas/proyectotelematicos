@@ -6,6 +6,10 @@ class NotificacionesService {
 
   NotificacionesService(this._client);
 
+  Future<Map<String, dynamic>> avisos({int pagina = 1}) async =>
+      Map<String, dynamic>.from(await _client.get('/api/notificaciones',
+        query: {'page': '$pagina', 'por_pagina': '20'}) as Map);
+
   Future<Set<String>> lineasSuscritas() async {
     final datos = await _client.get('/api/notificaciones/suscripciones') as List;
     return datos.map((s) => (s as Map)['linea'] as String).toSet();

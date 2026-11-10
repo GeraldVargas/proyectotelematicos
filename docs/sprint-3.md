@@ -182,3 +182,23 @@ La compilación web completa no se pudo confirmar: el intento agotó la memoria 
 la comprobación WebAssembly. No se declara validación visual ni ejecución Docker/PostGIS.
 Las nuevas pruebas PostGIS se incluyen en el job existente de CI y las pruebas del panel
 se incorporaron al job Node; no se ejecutó CI desde esta sesión.
+
+## Presentación de avisos y coherencia visual
+
+Notificaciones muestra ahora los avisos reales del usuario desde `GET /api/notificaciones`,
+con título, mensaje y fecha, paginación y actualización manual. Consulta novedades cada 30
+segundos mientras está abierta en la primera página; al consultar avisos anteriores se conserva
+la lista hasta actualizar manualmente. «Mis líneas» mantiene las suscripciones existentes.
+El estado vacío explica cómo activar avisos; los errores permiten reintentar. Esta bandeja
+no depende de Firebase para leer avisos guardados; el push conserva sus requisitos anteriores.
+
+Se usan el azul petróleo `#09596E` y el turquesa `#19B7B0` de la app clásica, con soporte de
+su modo oscuro. El panel administrativo adopta esos colores, formularios más legibles y
+«Guardar y avisar» para aclarar el efecto de editar una ruta. Esta revisión no cambia APIs,
+permisos, generación de eventos ni operaciones del administrador: solo presentación y lectura
+de los avisos que ya almacena el servicio. Editar paradas o radio taxis no genera avisos de ruta.
+
+Validación de esta revisión visual: pruebas de pantalla para lectura de avisos, paginación,
+suscripciones, estado vacío y refresco automático; siete pruebas Node del administrador
+aprobadas. El analizador de la pantalla y del cliente de notificaciones no reportó problemas.
+No se levantó Docker ni se verificó entrega push a un teléfono en esta revisión.

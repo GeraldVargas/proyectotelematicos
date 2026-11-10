@@ -1,26 +1,70 @@
 # App Flutter de ColcaTrufis
 
-Requiere Flutter instalado y el entorno Docker de la raíz encendido.
+## Requisitos
+
+- Entorno usado para verificar esta guía: Flutter 3.41.2 y Dart 3.11.0. El lock actual exige
+  Dart `>=3.11.0 <4.0.0`; conserva `pubspec.lock` para repetir las dependencias.
+- Docker Desktop con el entorno de la raíz levantado, salvo que uses `USE_MOCKS=true`.
+- Para Android: emulador (usa `10.0.2.2`) o teléfono en la misma red Wi-Fi que la PC.
+- Para compilar Android: Android SDK, sus licencias aceptadas y un JDK compatible con Gradle
+  (el proyecto compila código Java/Kotlin para Java 17). Comprueba la instalación con
+  `flutter doctor -v` y los destinos con `flutter devices`.
+
+## Ejecutar
+
+Desde `fronted/`:
 
 ```powershell
 flutter pub get
 flutter run -d chrome --dart-define=GATEWAY_URL=http://localhost:8080
 ```
 
-Android emulado: `flutter run --dart-define=GATEWAY_URL=http://10.0.2.2:8080`.
-Android físico en la misma Wi-Fi: `flutter run --dart-define=GATEWAY_URL=http://IP-DE-TU-PC:8080`.
-Las compilaciones de depuración ya permiten HTTP para la IP local; la versión release exige HTTPS.
-El teléfono debe poder alcanzar el puerto 8080 de la PC. No uses `localhost` en el teléfono.
+Antes, desde la raíz, levanta `docker compose --profile demo up -d --build --wait --wait-timeout 300`.
+Comprueba que el Gateway responda y que el panel abra en `http://localhost:8081`.
 
-Usuario de la app: `demo@colcatrufis.local` / `demo12345`.
-Para trabajar sin las APIs: `flutter run --dart-define=USE_MOCKS=true`; usa las mismas credenciales.
-El mapa base de OpenFreeMap requiere conexión a Internet incluso en modo simulado.
+En Android emulado:
 
-## Notificaciones push (FCM)
+```powershell
+flutter run --dart-define=GATEWAY_URL=http://10.0.2.2:8080
+```
 
-La app no incluye credenciales. Sin estas variables compila y funciona igual, solo que sin push.
-Con un proyecto de Firebase (app Android `com.example.fronted`), copia los valores de la
-consola de Firebase y compila así:
+En un teléfono físico, reemplaza `IP-DE-TU-PC` por la IP LAN de la PC:
+
+```powershell
+flutter run --dart-define=GATEWAY_URL=http://IP-DE-TU-PC:8080
+```
+
+No uses `localhost` en un teléfono. Las compilaciones debug permiten HTTP local; release requiere
+HTTPS. Usuario de demo: `demo@colcatrufis.local` / `demo12345`.
+Al cambiar un `--dart-define`, detén y vuelve a ejecutar o compilar la app; hot reload no cambia
+estos valores. La opción «Continuar sin iniciar sesión» abre la app clásica y usa el monolito
+configurado en `lib/config/app_config.dart`; `GATEWAY_URL` solo cambia el cliente de microservicios.
+
+Para trabajar sin backend:
+
+```powershell
+flutter run --dart-define=USE_MOCKS=true
+```
+
+El mapa base de OpenFreeMap necesita Internet incluso con mocks. Las fixtures incluyen las mismas
+22 rutas y 135 paradas OSM del backend; el modo mock no recibe eventos de Docker ni push real.
+
+## Variables de compilación
+
+| Variable | Valor predeterminado / uso |
+|---|---|
+| `GATEWAY_URL` | `http://10.0.2.2:8080`, sin `/api` al final; usa localhost en Chrome o la IP LAN en teléfono |
+| `USE_MOCKS` | `false`; `true` usa fixtures locales y sesión de prueba |
+| `FIREBASE_API_KEY` | Vacío; API key de la aplicación Android registrada en Firebase |
+| `FIREBASE_APP_ID` | Vacío; App ID Android de Firebase |
+| `FIREBASE_SENDER_ID` | Vacío; identificador del remitente FCM |
+| `FIREBASE_PROJECT_ID` | Vacío; mismo proyecto configurado en el backend |
+
+## Firebase Cloud Messaging
+
+Sin configuración Firebase la app compila, pero no recibe push. El cliente habilita FCM en móvil
+cuando las cuatro variables están completas y `USE_MOCKS=false`; el build web lo omite.
+Registra la app Android con `com.example.fronted` y define los valores de tu proyecto:
 
 ```powershell
 flutter run --dart-define=GATEWAY_URL=http://IP-DE-TU-PC:8080 `
@@ -28,51 +72,36 @@ flutter run --dart-define=GATEWAY_URL=http://IP-DE-TU-PC:8080 `
   --dart-define=FIREBASE_SENDER_ID=... --dart-define=FIREBASE_PROJECT_ID=...
 ```
 
-El backend debe enviar con ese mismo proyecto: ver [ADR 0005](../docs/adr/0005-push-fcm-y-radiotaxis.md).
-El contenedor `fcm-mock` solo sirve para probar el backend: un teléfono real no recibe esos mensajes.
+El backend debe usar el mismo proyecto; consulta [docs/fcm-real.md](../docs/fcm-real.md) y
+[ADR 0005](../docs/adr/0005-push-fcm-y-radiotaxis.md). El `fcm-mock` local no entrega mensajes a
+un teléfono real.
 
-Las fixtures se generan con `node scripts/generate-mocks.mjs` desde la raíz. Contienen las mismas
-22 rutas y 135 paradas OSM que la semilla del backend, sin usuarios reales.
-
-```powershell
-flutter test
-flutter build web --dart-define=GATEWAY_URL=http://localhost:8080
-```
-
-La prueba en un Android físico y la regresión de la app clásica requieren un dispositivo y acceso
-al backend histórico; no se consideran verificadas por compilar la versión web.
-
-## Verificación en Windows (03/11/2026)
-
-Con Flutter 3.41.2 y Dart 3.11.0 se instalaron las dependencias de Firebase declaradas y se actualizó
-`pubspec.lock`. Las 20 pruebas de red, sesión, mocks, radio taxis y suscripciones pasan. Incluyen
-el cierre de sesión cuando el access token venció: el refresh que se acaba de renovar también se
-revoca antes de borrar los tokens locales.
-
-La compilación web con el Gateway local se completó correctamente. `flutter analyze` no encontró
-errores de compilación; informa 11 advertencias de la pantalla clásica y 202 recomendaciones,
-entre ellas dos avisos de obsolescencia de la API de Firebase. No se declara limpio el análisis.
-La entrega push real continúa pendiente de configurar Firebase y probar un teléfono.
-
-También se generó `build/app/outputs/flutter-apk/app-debug.apk` (Android ARM64, modo debug) con:
+## Verificar y compilar
 
 ```powershell
-flutter build apk --debug --no-pub --target-platform android-arm64 --dart-define=GATEWAY_URL=http://10.0.2.2:8080
+flutter test --no-pub
+flutter analyze
+flutter build web --no-pub --dart-define=GATEWAY_URL=http://localhost:8080
+flutter build apk --debug --no-pub --target-platform android-arm64 `
+  --dart-define=GATEWAY_URL=http://10.0.2.2:8080
 ```
 
-Ese APK usa la dirección del host vista desde un emulador Android. Para un teléfono físico,
-repite la compilación con la IP de tu PC en `GATEWAY_URL` y autoriza esa IP de desarrollo como
-se indica arriba. La compilación no sustituye la prueba de login, mapa y push en el dispositivo.
+El APK queda en `build/app/outputs/flutter-apk/app-debug.apk`; el build web en `build/web/`.
+Para teléfono físico vuelve a compilar el APK con la IP LAN, selecciona el dispositivo con
+`flutter run -d ID` y permite la conexión de entrada al Gateway en el firewall de tu PC.
+La configuración release exige HTTPS y aún usa la firma debug del proyecto; el comando anterior
+genera un APK de prueba, no una publicación para tienda.
 
-## Getting Started
+En el equipo de 8 GB de esta revisión, compilar Flutter mientras estaban activos todos los
+contenedores y el navegador agotó la memoria disponible y produjo timeouts del Gateway.
+En equipos similares, completa las compilaciones antes de ejecutar la demo. Puedes detener
+temporalmente el entorno desde la raíz con `docker compose --profile demo stop` y volver a
+levantarlo con el comando de preparación anterior; los volúmenes se conservan.
 
-This project is a starting point for a Flutter application.
+Las fixtures se regeneran desde la raíz con `node scripts/generate-mocks.mjs`.
+El análisis histórico informa warnings y recomendaciones en la pantalla clásica; consulta los
+resultados actuales en [QA del Sprint 3](../docs/qa-sprint-3.md). La prueba en Android físico y la
+recepción de FCM real requieren un dispositivo, Firebase configurado y una red accesible.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Guion de prueba y video de menos de tres minutos: [demo del Sprint 3](../docs/demo-sprint-3.md).
+La verificación por otro integrante debe registrarse con nombre y fecha en el documento de QA.

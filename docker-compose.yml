@@ -1,6 +1,6 @@
 # Entorno local de ColcaTrufis con microservicios.
 #   docker compose up -d --build
-#   docker compose --profile demo up -d   # además mueve los radio taxis de demostración
+#   docker compose --profile demo up -d --build --wait  # prepara y verifica los datos de demo
 # Único puerto público para las APIs: el Gateway en http://localhost:8080
 # Las versiones de las imágenes están fijadas para que todos tengan el mismo entorno.
 
@@ -123,6 +123,21 @@ services:
       <<: *ubicacion-env
       RUN_MIGRATIONS: "false"
     restart: unless-stopped
+    depends_on:
+      demo-datos-ubicacion:
+        condition: service_completed_successfully
+
+  # Reaplica la semilla completa al activar la demo, incluso si existe un volumen anterior.
+  # El seeder es idempotente y conserva las ediciones del administrador.
+  demo-datos-ubicacion:
+    build: ./services/api-ubicacion
+    profiles: [demo]
+    command: ["php", "artisan", "demo:preparar"]
+    environment:
+      <<: *ubicacion-env
+      RUN_MIGRATIONS: "false"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       api-ubicacion:
         condition: service_healthy

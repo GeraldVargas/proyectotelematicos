@@ -1,0 +1,8 @@
+{
+  "fecha": "2026-11-10T19:16:09.614Z",
+  "panel": "http://localhost:8081",
+  "checks": [],
+  "status": "failed",
+  "error": "Tiempo agotado: login y rutas reales",
+  "diagnostico": "Gateway: context deadline exceeded tras 10 s; Windows: 382220 KiB libres mientras compilaba Flutter. Se detuvo temporalmente Docker conservando sus datos para terminar las compilaciones antes de repetir."
+}

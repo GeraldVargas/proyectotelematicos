@@ -9,6 +9,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
+const demo = process.argv.includes('--demo');
 const temporary = path.join(root, '.verification');
 mkdirSync(temporary, { recursive: true });
 const snapshot = mkdtempSync(path.join(temporary, 'clean-'));
@@ -33,6 +34,7 @@ echo json_encode(['driver' => Illuminate\\Support\\Facades\\DB::connection()->ge
 `);
 const report = {
   fecha: new Date().toISOString(), estado: 'en curso', proyecto: project,
+  perfil: demo ? 'demo' : 'normal',
   origen: 'Fuentes versionables del arbol de trabajo actual; no es un clon remoto ni una descarga sin cache.',
   cacheDocker: 'existente', basesDeDatos: 'volumenes nuevos, separados del entorno principal',
   equipo: { cpu: os.cpus()[0].model, ramGiB: +(os.totalmem() / 1024 ** 3).toFixed(1), so: `${os.type()} ${os.release()}` },
@@ -47,8 +49,12 @@ async function port() {
 const ports = new Set();
 while (ports.size < 5) ports.add(await port());
 const [gateway, panel, swagger, database, fcm] = [...ports];
-const environment = { ...process.env, GATEWAY_PORT: String(gateway), ADMIN_WEB_PORT: String(panel), SWAGGER_PORT: String(swagger), UBICACION_DB_PORT: String(database), FCM_MOCK_PORT: String(fcm) };
-const compose = ['compose', '-p', project, '-f', path.join(snapshot, 'docker-compose.yml')];
+const environment = {
+  ...process.env, GATEWAY_PORT: String(gateway), ADMIN_WEB_PORT: String(panel),
+  SWAGGER_PORT: String(swagger), UBICACION_DB_PORT: String(database), FCM_MOCK_PORT: String(fcm),
+  FCM_URL: 'http://fcm-mock:8080', FCM_PROJECT_ID: 'colcatrufis-local', FCM_CREDENCIALES: '',
+};
+const compose = ['compose', '-p', project, '-f', path.join(snapshot, 'docker-compose.yml'), ...(demo ? ['--profile', 'demo'] : [])];
 function run(command, args, label) {
   console.log(label);
   return new Promise((resolve, reject) => {
@@ -66,6 +72,42 @@ try {
   const start = Date.now();
   await run('docker', [...compose, 'up', '-d', '--build', '--wait', '--wait-timeout', '240'], 'Construyendo copia limpia con BDs nuevas...');
   report.arranqueSegundos = +((Date.now() - start) / 1000).toFixed(2);
+  if (demo) {
+    report.preparacionDemo = (await run('docker', [...compose, 'logs', '--no-color', 'demo-datos-ubicacion'], 'Comprobando la preparación del perfil demo...'))
+      .match(/Demo lista: [^\r\n]+/)?.[0];
+    if (!report.preparacionDemo) throw new Error('El perfil demo no confirmó su conjunto OSM completo.');
+    const session = await fetch(`http://localhost:${gateway}/api/usuarios/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'demo@colcatrufis.local', password: 'demo12345' }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!session.ok) throw new Error(`Login de demo: HTTP ${session.status}`);
+    const { access_token } = await session.json();
+    async function getGeo(resource) {
+      const response = await fetch(`http://localhost:${gateway}/api/ubicacion/${resource}`, {
+        headers: { Authorization: `Bearer ${access_token}` }, signal: AbortSignal.timeout(20000),
+      });
+      if (!response.ok) throw new Error(`${resource}: HTTP ${response.status}`);
+      return response.json();
+    }
+    const source = JSON.parse(readFileSync(path.join(snapshot, 'services/api-ubicacion/database/data/rutas_colcapirhua.geojson'), 'utf8'));
+    const expectedStops = new Set(source.features.flatMap(f => f.properties.paradas.map(p => p.osm_id))).size;
+    const routes = await getGeo('rutas');
+    const stops = await getGeo('paradas');
+    if (routes.features.length !== source.features.length || stops.features.length !== expectedStops) {
+      throw new Error('El Gateway no publica el conjunto completo de rutas y paradas de demo.');
+    }
+    const taxis = await getGeo('radiotaxis');
+    if (taxis.features.length !== 4) throw new Error('Faltan los cuatro radio taxis de demo.');
+    const positions = data => JSON.stringify(data.features.map(f => [f.id, f.geometry.coordinates]));
+    let moving = false;
+    for (let attempt = 0; attempt < 25 && !moving; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      moving = positions(taxis) !== positions(await getGeo('radiotaxis'));
+    }
+    if (!moving) throw new Error('El simulador no actualizó las posiciones durante 25 segundos.');
+    report.demo = { rutas: routes.features.length, paradas: stops.features.length, radiotaxis: taxis.features.length, movimientoVerificado: moving };
+  }
   report.semillaAntesDeTests = JSON.parse(await run('docker', [...compose, 'exec', '-T', 'api-usuarios', 'php', 'tests/verify-seed.php'], 'Verificando semilla inicial...'));
   const results = await Promise.all(['api-usuarios', 'api-ubicacion', 'api-notificaciones'].map(async (service) => {
     const output = await run('docker', [...compose, 'exec', '-T', service, 'php', 'artisan', 'test', '--no-ansi'], `Tests: ${service}`);
@@ -95,8 +137,9 @@ try {
     try { await run('docker', [...compose, 'down', '-v'], 'Retirando solo el entorno desechable de verificacion...'); report.limpieza = 'correcta'; }
     catch (error) { report.limpieza = error.message; process.exitCode = 1; }
   }
-  writeFileSync(path.join(artifacts, 'clean-verify.json'), `${JSON.stringify(report, null, 2)}\n`);
+  const name = demo ? 'demo-verify' : 'clean-verify';
+  writeFileSync(path.join(artifacts, `${name}.json`), `${JSON.stringify(report, null, 2)}\n`);
   // Conservar el original local y publicar texto legible sin escapes ANSI ni espacios finales.
   const readableLog = stripVTControlCharacters(readFileSync(logfile, 'utf8')).split(/\r?\n/).map((line) => line.trimEnd()).join('\n');
-  writeFileSync(path.join(artifacts, 'clean-verify.log'), readableLog);
+  writeFileSync(path.join(artifacts, `${name}.log`), readableLog);
 }

@@ -1,0 +1,30 @@
+{
+  "fecha": "2026-11-10T19:25:57.083Z",
+  "panel": "http://localhost:8081",
+  "checks": [
+    "Administrador ve mapa y al menos cuatro rutas",
+    "Desmarcar una ruta actualiza el filtro del mapa",
+    "Ocultar paradas cambia la capa del mapa",
+    "Seleccionar ruta muestra línea y sindicato",
+    "Seleccionar parada muestra sus líneas",
+    "Editor administrativo muestra puntos del trazado",
+    "Arrastrar un punto cambia el trazado temporal",
+    "Quitar punto elimina el vértice seleccionado",
+    "Restablecer recupera el trazado original",
+    "Cancelar edición retira el trazado temporal",
+    "Guardar desde el editor web confirma la actualización del trazado",
+    "Panel muestra paradas cercanas obtenidas del Gateway",
+    "Panel muestra la capa de radio taxis desde la API",
+    "Seleccionar un radio taxi muestra su detalle",
+    "Ocultar radio taxis cambia la capa del mapa",
+    "Administrador ve la lista de usuarios",
+    "Salir del panel revoca el refresh token en el servidor",
+    "El rol usuario no entra al panel ni conserva sesión administrativa",
+    "Swagger UI muestra los tres servicios",
+    "Swagger Try it out ejecuta /api/ubicacion/rutas con JWT y devuelve FeatureCollection",
+    "Swagger Try it out ejecuta /api/ubicacion/radiotaxis con JWT y devuelve FeatureCollection",
+    "Swagger Try it out ejecuta /api/usuarios/lista con JWT y devuelve admin@colcatrufis.local",
+    "Swagger Try it out ejecuta /api/notificaciones/historial con JWT y devuelve current_page"
+  ],
+  "status": "passed"
+}

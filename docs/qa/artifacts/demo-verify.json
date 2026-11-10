@@ -1,0 +1,50 @@
+{
+  "fecha": "2026-11-10T19:11:53.650Z",
+  "estado": "correcto",
+  "proyecto": "colcatrufis-verify-1794337911923",
+  "perfil": "demo",
+  "origen": "Fuentes versionables del arbol de trabajo actual; no es un clon remoto ni una descarga sin cache.",
+  "cacheDocker": "existente",
+  "basesDeDatos": "volumenes nuevos, separados del entorno principal",
+  "equipo": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "ramGiB": 7.7,
+    "so": "Windows_NT 10.0.26200"
+  },
+  "arranqueSegundos": 70.24,
+  "preparacionDemo": "Demo lista: 22 rutas OSM, 135 paradas OSM y 4 radio taxis demo.",
+  "demo": {
+    "rutas": 22,
+    "paradas": 135,
+    "radiotaxis": 4,
+    "movimientoVerificado": true
+  },
+  "semillaAntesDeTests": {
+    "driver": "mysql",
+    "users": 2,
+    "demo": true,
+    "password_ok": true
+  },
+  "tests": [
+    {
+      "servicio": "api-usuarios",
+      "resultado": "Tests:    22 passed (89 assertions)"
+    },
+    {
+      "servicio": "api-ubicacion",
+      "resultado": "Tests:    28 passed (22209 assertions)"
+    },
+    {
+      "servicio": "api-notificaciones",
+      "resultado": "Tests:    24 passed (96 assertions)"
+    }
+  ],
+  "semillaDespuesDeTests": {
+    "driver": "mysql",
+    "users": 2,
+    "demo": true,
+    "password_ok": true
+  },
+  "smoke": "Resultado: 59 comprobaciones correctas.",
+  "limpieza": "correcta"
+}

@@ -2,10 +2,25 @@
 
 ## Objetivo
 
-Comparar el monolito y la arquitectura de microservicios con la misma semilla OSM y un perfil de
-carga reproducible. El alcance de este sprint es el análisis de rendimiento; las validaciones en
-Android físico, Firebase real, firmas y protección remota de la rama se conservan como pendientes
-externos de los sprints anteriores.
+Estabilizar el sistema, preparar una demo reproducible y completar las instrucciones de ejecución,
+manteniendo la comparación monolito/microservicios ya realizada. Esta revisión cubre las tareas
+del Sprint 3 del PDF, páginas 25–27, hasta antes de «Definición de Done del Sprint 3 (entrega
+final)». Las tareas marcadas «Realizado» en el PDF se conservan como antecedentes; no se atribuyen
+como trabajo nuevo.
+
+## Pendientes del PDF atendidos el 10/11/2026
+
+| Responsable | Tarea del Sprint 3 | Trabajo y estado |
+|---|---|---|
+| Salvador | Revisar y completar el README principal: clonar → levantar → probar | Documentación actualizada y comandos comprobados con fuentes limpias y bases nuevas. Falta la revisión personal por otro integrante exigida en el entregable. |
+| Salvador | Preparar Docker Compose en modo demo | Realizado y ejecutado. El perfil `demo` prepara y valida la semilla antes de iniciar el simulador. |
+| Julio | Preparar el conjunto completo de rutas y paradas en la BD demo | Realizado: 22 rutas OSM y 135 paradas publicadas por el Gateway; cuatro radio taxis demo y movimiento comprobados. La repetición conserva ediciones. |
+| Luis | Resolver bugs pendientes de Flutter; app estable en Android físico | Revalidados los 20 tests y las compilaciones web y APK debug ARM64. La comprobación de estabilidad en Android físico queda pendiente: ADB no detectó ningún dispositivo conectado. |
+| Luis | Grabar video del flujo completo en `docs/demo-flutter.mp4` | Pendiente de Android físico y FCM real. Se dejó un guion de 160 segundos y los comandos de captura; no se generó un video simulado. |
+| Luis | Instrucciones definitivas de compilación y variables en `fronted/README.md` | README actualizado: requisitos, Gateway por plataforma, seis variables, mocks, FCM, pruebas y compilación. Falta la verificación personal por otro integrante. |
+
+Evidencia de las comprobaciones y revisión manual pendiente: [QA del Sprint 3](qa-sprint-3.md).
+Preparación, presentación y captura: [guion de demo](demo-sprint-3.md).
 
 ## Método
 
@@ -56,6 +71,8 @@ milisegundos y solicitudes por segundo en la misma escala.
 
 ## Estado
 
-El análisis comparativo del Sprint 3 está documentado. La validación de 100 usuarios, el Android
-físico, Firebase real, las firmas y la protección de `main` permanecen pendientes de recursos o
-acciones externas.
+El análisis comparativo previo se conserva y el modo demo y su conjunto de datos se comprobaron
+con bases nuevas. Los dos README están actualizados; requieren validación por otro integrante
+para completar literalmente esos entregables. La estabilidad en Android físico y el video con
+push requieren conectar un teléfono y configurar Firebase real. La validación de 100 usuarios
+sigue siendo una limitación del estudio de rendimiento, no una prueba ejecutada en esta revisión.
